@@ -16,14 +16,46 @@ section{padding:90px 0}.cream{background:var(--cream)}h2{font-size:clamp(30px,4v
 @media(max-width:850px){.links{display:none}.hero-grid{grid-template-columns:1fr}.features,.grid{grid-template-columns:repeat(2,1fr)}.foot{grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.hero{padding:70px 0}.features,.grid,.foot{grid-template-columns:1fr}.feature{border-left:1px solid var(--line);border-bottom:1px solid var(--line)}section{padding:70px 0}}
 </style>
-</head>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const AMASA_SUPABASE_URL = "https://fysaxpqpqexjnlpkbwap.supabase.co";
+const AMASA_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_DWRaEZTcNMjhglwN3nqCOw_pua8rsjD";
+const amasaSupabase = window.supabase.createClient(AMASA_SUPABASE_URL, AMASA_SUPABASE_PUBLISHABLE_KEY);
+
+async function loadAmasaProducts() {
+  const grid = document.querySelector("#amasa-product-grid");
+  if (!grid) return;
+  const { data, error } = await amasaSupabase
+    .from("amasa_products")
+    .select("id,name,slug,short_description,image_url,price,is_featured,amasa_categories(name)")
+    .eq("is_active", true)
+    .order("sort_order", { ascending: true });
+  if (error) {
+    console.error("AMASA Supabase:", error);
+    return;
+  }
+  if (!data || !data.length) return;
+  grid.innerHTML = data.map(p => {
+    const category = p.amasa_categories?.name || "AMASA";
+    const image = p.image_url
+      ? '<img src="' + p.image_url + '" alt="' + escapeHtml(p.name) + '" style="width:100%;height:100%;object-fit:cover">'
+      : escapeHtml(category.toUpperCase());
+    const price = p.price != null ? new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(p.price) : "";
+    return '<article class="card"><div class="image">' + image + '</div><div class="body"><span class="gold">' + escapeHtml(category) + '</span><h3>' + escapeHtml(p.name) + '</h3><p>' + escapeHtml(p.short_description || "") + '</p>' + (price ? '<strong>' + price + '</strong>' : '') + '</div></article>';
+  }).join("");
+}
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+}
+document.addEventListener("DOMContentLoaded", loadAmasaProducts);
+</script></head>
 <body>
 <header><div class="container nav"><a class="logo" href="#">AMASA<small>PT ADIIMASA DISTRIBUSI INDONESIA</small></a><nav class="links"><a href="#tentang">Tentang</a><a href="#produk">Produk</a><a href="#solusi">Solusi</a><a href="#kontak">Kontak</a></nav></div></header>
 <main>
 <section class="hero"><div class="container hero-grid"><div><div class="label">AMASA V2 · RELEASE 01</div><h1>Kebutuhan yang<br><span>dibuat lebih baik.</span></h1><p>AMASA menghadirkan produk kebutuhan rumah tangga dan perawatan kendaraan dengan pendekatan yang praktis, konsisten, dan mudah digunakan.</p><div class="actions"><a class="btn primary" href="#produk">Lihat Produk</a><a class="btn secondary" href="#kontak">Hubungi AMASA</a></div></div><div class="hero-card">AMASA · PRODUCT EXPERIENCE</div></div></section>
 <div class="container features"><div class="feature"><div class="icon">01</div><h3>Praktis</h3><p class="muted">Produk dirancang untuk kebutuhan sehari-hari.</p></div><div class="feature"><div class="icon">02</div><h3>Konsisten</h3><p class="muted">Fokus pada kualitas dan pengalaman penggunaan.</p></div><div class="feature"><div class="icon">03</div><h3>Terjangkau</h3><p class="muted">Solusi yang mudah dijangkau untuk berbagai kebutuhan.</p></div><div class="feature"><div class="icon">04</div><h3>Berkembang</h3><p class="muted">Portofolio produk terus dikembangkan.</p></div></div>
 <section id="tentang" class="cream"><div class="container"><div class="label">TENTANG AMASA</div><h2>Membangun produk untuk kebutuhan nyata.</h2><p class="muted" style="max-width:720px">AMASA adalah bagian dari PT Adiimasa Distribusi Indonesia. Website V2 ini menjadi fondasi awal untuk katalog produk, informasi brand, media, dan pengembangan sistem digital berbasis GitHub dan Supabase.</p></div></section>
-<section id="produk"><div class="container"><div class="label">PRODUK</div><h2>Produk AMASA</h2><div class="grid"><article class="card"><div class="image">PRODUCT 01</div><div class="body"><span class="gold">HOME CARE</span><h3>Kebutuhan Rumah Tangga</h3><p>Koleksi produk untuk membantu menjaga kebersihan dan kenyamanan rumah.</p></div></article><article class="card"><div class="image">PRODUCT 02</div><div class="body"><span class="gold">VEHICLE CARE</span><h3>Perawatan Kendaraan</h3><p>Solusi praktis untuk perawatan kendaraan sehari-hari.</p></div></article><article class="card"><div class="image">PRODUCT 03</div><div class="body"><span class="gold">DAILY USE</span><h3>Produk Harian</h3><p>Produk yang dikembangkan berdasarkan kebutuhan penggunaan sehari-hari.</p></div></article><article class="card"><div class="image">PRODUCT 04</div><div class="body"><span class="gold">COMING SOON</span><h3>Produk Berikutnya</h3><p>Portofolio AMASA akan terus diperluas secara bertahap.</p></div></article></div></div></section>
+<section id="produk"><div class="container"><div class="label">PRODUK</div><h2>Produk AMASA</h2><div id="amasa-product-grid" class="grid"></div></div></section>
 <section id="solusi" class="cream"><div class="container"><div class="label">SOLUSI</div><h2>Satu fondasi untuk AMASA V2.</h2><div class="grid"><article class="card"><div class="body"><h3>Katalog Digital</h3><p>Struktur katalog siap dikembangkan menjadi data produk dinamis.</p></div></article><article class="card"><div class="body"><h3>Admin</h3><p>Fondasi halaman pengelolaan konten disiapkan untuk tahap berikutnya.</p></div></article><article class="card"><div class="body"><h3>Supabase</h3><p>Backend akan menggunakan database, auth, storage, dan RLS Supabase.</p></div></article><article class="card"><div class="body"><h3>GitHub</h3><p>Website dipublikasikan dari repository AMASA Product.</p></div></article></div></div></section>
 <section id="kontak" class="cta"><div class="container"><div class="label">PT ADIIMASA DISTRIBUSI INDONESIA</div><h2>AMASA siap dikembangkan.</h2><p>Ini adalah release pertama AMASA V2. Tahap berikutnya adalah menghubungkan katalog, admin, media, dan database Supabase secara penuh.</p><a class="btn primary" href="mailto:info@adiimasa.com">Hubungi AMASA</a></div></section>
 </main>
