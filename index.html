@@ -1,64 +1,1000 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AMASA | PT Adiimasa Distribusi Indonesia</title>
-<meta name="description" content="AMASA — produk kebutuhan rumah tangga dan perawatan kendaraan dari PT Adiimasa Distribusi Indonesia.">
-<style>
-:root{--navy:#13263a;--dark:#0b1827;--gold:#b58a50;--cream:#f7f5f0;--text:#172433;--muted:#667383;--line:#e3e7eb;--white:#fff;--max:1180px}
-*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--text);line-height:1.65}a{text-decoration:none;color:inherit}.container{width:min(var(--max),92%);margin:auto}
-header{position:sticky;top:0;z-index:10;background:#fffffff5;border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}.nav{min-height:78px;display:flex;align-items:center;justify-content:space-between;gap:30px}.logo{font-size:27px;font-weight:900;letter-spacing:.18em;color:var(--navy)}.logo small{display:block;margin-top:5px;color:var(--gold);font-size:8px;letter-spacing:.19em}.links{display:flex;gap:26px;font-size:13px;font-weight:700}.links a:hover{color:var(--gold)}
-.hero{color:#fff;background:radial-gradient(circle at 78% 40%,#b58a5033,transparent 29%),linear-gradient(125deg,var(--dark),var(--navy) 55%,#1e405c);padding:95px 0}.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:60px;align-items:center}.label{color:#d7b47b;font-size:11px;font-weight:900;letter-spacing:.18em}.hero h1{font-size:clamp(42px,6vw,72px);line-height:1.03;letter-spacing:-.035em;margin:15px 0 24px}.hero h1 span{display:block;color:#d8e1e8}.hero p{max-width:620px;color:#d7e0e7;font-size:17px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:30px}.btn{display:inline-flex;align-items:center;justify-content:center;padding:13px 22px;border-radius:8px;font-size:13px;font-weight:800}.primary{background:var(--gold);color:#fff}.secondary{border:1px solid #ffffff59;color:#fff}.hero-card{min-height:420px;border:1px solid #ffffff22;border-radius:18px;display:grid;place-items:center;background:linear-gradient(145deg,#ffffff1f,#ffffff06),radial-gradient(circle at 50% 35%,#d7b47b40,transparent 45%);color:#ffffff8c;font-size:12px;font-weight:800;letter-spacing:.16em;text-align:center}
-section{padding:90px 0}.cream{background:var(--cream)}h2{font-size:clamp(30px,4vw,48px);line-height:1.12;color:var(--navy);margin:10px 0 20px}.muted{color:var(--muted)}.features{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--line)}.feature{padding:32px 25px;border-right:1px solid var(--line)}.feature:first-child{border-left:1px solid var(--line)}.icon{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:var(--navy);color:#fff;font-size:11px;font-weight:900;margin-bottom:16px}
-.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.card{border:1px solid var(--line);border-radius:14px;background:#fff;overflow:hidden}.card .image{aspect-ratio:1;background:linear-gradient(145deg,#eef1f3,#c7cfd5);display:grid;place-items:center;color:#6c7884;font-size:12px;font-weight:900;letter-spacing:.12em}.card .body{padding:18px}.gold{color:var(--gold);font-size:10px;font-weight:900;letter-spacing:.12em}.card h3{color:var(--navy);font-size:17px}.card p{font-size:13px;color:var(--muted)}
-.cta{text-align:center;color:#fff;background:linear-gradient(125deg,var(--navy),var(--dark))}.cta h2{color:#fff}.cta p{color:#d8e1e8;max-width:720px;margin:0 auto 28px}footer{background:#081522;color:#fff;padding:55px 0 20px}.foot{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px}.foot p,.foot a{color:#aebbc5;font-size:13px}.copy{text-align:center;border-top:1px solid #ffffff1a;margin-top:40px;padding-top:18px;color:#8d9aa5;font-size:11px}
-@media(max-width:850px){.links{display:none}.hero-grid{grid-template-columns:1fr}.features,.grid{grid-template-columns:repeat(2,1fr)}.foot{grid-template-columns:1fr 1fr}}
-@media(max-width:560px){.hero{padding:70px 0}.features,.grid,.foot{grid-template-columns:1fr}.feature{border-left:1px solid var(--line);border-bottom:1px solid var(--line)}section{padding:70px 0}}
-</style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-const AMASA_SUPABASE_URL = "https://fysaxpqpqexjnlpkbwap.supabase.co";
-const AMASA_SUPABASE_PUBLISHABLE_KEY = "sb_publishable_DWRaEZTcNMjhglwN3nqCOw_pua8rsjD";
-const amasaSupabase = window.supabase.createClient(AMASA_SUPABASE_URL, AMASA_SUPABASE_PUBLISHABLE_KEY);
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-async function loadAmasaProducts() {
-  const grid = document.querySelector("#amasa-product-grid");
-  if (!grid) return;
-  const { data, error } = await amasaSupabase
-    .from("amasa_products")
-    .select("id,name,slug,short_description,image_url,price,is_featured,amasa_categories(name)")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true });
-  if (error) {
-    console.error("AMASA Supabase:", error);
-    return;
-  }
-  if (!data || !data.length) return;
-  grid.innerHTML = data.map(p => {
-    const category = p.amasa_categories?.name || "AMASA";
-    const image = p.image_url
-      ? '<img src="' + p.image_url + '" alt="' + escapeHtml(p.name) + '" style="width:100%;height:100%;object-fit:cover">'
-      : escapeHtml(category.toUpperCase());
-    const price = p.price != null ? new Intl.NumberFormat("id-ID",{style:"currency",currency:"IDR",maximumFractionDigits:0}).format(p.price) : "";
-    return '<article class="card"><div class="image">' + image + '</div><div class="body"><span class="gold">' + escapeHtml(category) + '</span><h3>' + escapeHtml(p.name) + '</h3><p>' + escapeHtml(p.short_description || "") + '</p>' + (price ? '<strong>' + price + '</strong>' : '') + '</div></article>';
-  }).join("");
-}
-function escapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-}
-document.addEventListener("DOMContentLoaded", loadAmasaProducts);
-</script></head>
+  <title>AMASA | Produk Kebutuhan Rumah Tangga</title>
+  <meta name="description" content="AMASA — produk kebutuhan rumah tangga dan perawatan kendaraan.">
+
+  <!--
+    AMASA
+    PT ADIIMASA DISTRIBUSI INDONESIA
+    RESTRUKTURISASI WEBSITE V1
+
+    Struktur dibuat mengikuti pola website MORVA:
+    Header → Hero → Keunggulan → Tentang → Produk →
+    Kategori → Custom/Konsultasi → Galeri → Video →
+    Cara Pemesanan → Testimoni → FAQ → CTA → Footer.
+
+    Produk nantinya dapat dikelola melalui halaman admin.
+  -->
+
+  <link rel="stylesheet" href="style.css">\n  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
 <body>
-<header><div class="container nav"><a class="logo" href="#">AMASA<small>PT ADIIMASA DISTRIBUSI INDONESIA</small></a><nav class="links"><a href="#tentang">Tentang</a><a href="#produk">Produk</a><a href="#solusi">Solusi</a><a href="#kontak">Kontak</a></nav></div></header>
-<main>
-<section class="hero"><div class="container hero-grid"><div><div class="label">AMASA V2 · RELEASE 01</div><h1>Kebutuhan yang<br><span>dibuat lebih baik.</span></h1><p>AMASA menghadirkan produk kebutuhan rumah tangga dan perawatan kendaraan dengan pendekatan yang praktis, konsisten, dan mudah digunakan.</p><div class="actions"><a class="btn primary" href="#produk">Lihat Produk</a><a class="btn secondary" href="#kontak">Hubungi AMASA</a></div></div><div class="hero-card">AMASA · PRODUCT EXPERIENCE</div></div></section>
-<div class="container features"><div class="feature"><div class="icon">01</div><h3>Praktis</h3><p class="muted">Produk dirancang untuk kebutuhan sehari-hari.</p></div><div class="feature"><div class="icon">02</div><h3>Konsisten</h3><p class="muted">Fokus pada kualitas dan pengalaman penggunaan.</p></div><div class="feature"><div class="icon">03</div><h3>Terjangkau</h3><p class="muted">Solusi yang mudah dijangkau untuk berbagai kebutuhan.</p></div><div class="feature"><div class="icon">04</div><h3>Berkembang</h3><p class="muted">Portofolio produk terus dikembangkan.</p></div></div>
-<section id="tentang" class="cream"><div class="container"><div class="label">TENTANG AMASA</div><h2>Membangun produk untuk kebutuhan nyata.</h2><p class="muted" style="max-width:720px">AMASA adalah bagian dari PT Adiimasa Distribusi Indonesia. Website V2 ini menjadi fondasi awal untuk katalog produk, informasi brand, media, dan pengembangan sistem digital berbasis GitHub dan Supabase.</p></div></section>
-<section id="produk"><div class="container"><div class="label">PRODUK</div><h2>Produk AMASA</h2><div id="amasa-product-grid" class="grid"></div></div></section>
-<section id="solusi" class="cream"><div class="container"><div class="label">SOLUSI</div><h2>Satu fondasi untuk AMASA V2.</h2><div class="grid"><article class="card"><div class="body"><h3>Katalog Digital</h3><p>Struktur katalog siap dikembangkan menjadi data produk dinamis.</p></div></article><article class="card"><div class="body"><h3>Admin</h3><p>Fondasi halaman pengelolaan konten disiapkan untuk tahap berikutnya.</p></div></article><article class="card"><div class="body"><h3>Supabase</h3><p>Backend akan menggunakan database, auth, storage, dan RLS Supabase.</p></div></article><article class="card"><div class="body"><h3>GitHub</h3><p>Website dipublikasikan dari repository AMASA Product.</p></div></article></div></div></section>
-<section id="kontak" class="cta"><div class="container"><div class="label">PT ADIIMASA DISTRIBUSI INDONESIA</div><h2>AMASA siap dikembangkan.</h2><p>Ini adalah release pertama AMASA V2. Tahap berikutnya adalah menghubungkan katalog, admin, media, dan database Supabase secara penuh.</p><a class="btn primary" href="mailto:info@adiimasa.com">Hubungi AMASA</a></div></section>
-</main>
-<footer><div class="container foot"><div><div class="logo">AMASA</div><p>PT Adiimasa Distribusi Indonesia</p></div><div><strong>Website</strong><p><a href="#tentang">Tentang</a></p><p><a href="#produk">Produk</a></p></div><div><strong>Platform</strong><p>GitHub + Supabase</p><p>AMASA V2 Release 01</p></div></div><div class="container copy">© 2026 PT Adiimasa Distribusi Indonesia. All rights reserved.</div></footer>
-</body>
-</html>
+
+  <!-- =====================================================
+       HEADER
+       ===================================================== -->
+  <header id="header">
+    <div class="container header-inner">
+
+      <a href="#beranda" class="logo" aria-label="AMASA">
+        <span class="logo-main">AMASA</span>
+        <span class="logo-sub">PT ADIIMASA DISTRIBUSI INDONESIA</span>
+      </a>
+
+      <nav class="main-navigation" aria-label="Navigasi utama">
+        <a href="#beranda">Beranda</a>
+        <a href="#tentang">Tentang Kami</a>
+        <a href="#produk">Produk</a>
+        <a href="#cara-pakai">Cara Pakai</a>
+        <a href="#testimoni">Testimoni</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <button class="menu-button" type="button" aria-label="Buka menu">
+        ☰
+      </button>
+
+    </div>
+  </header>
+
+
+  <main>
+
+    <!-- =====================================================
+         HERO
+         ===================================================== -->
+    <section id="beranda" class="hero-section">
+
+      <div class="container hero-content">
+
+        <div class="hero-copy">
+
+          <span class="section-label">
+            AMASA • HOME CARE & VEHICLE CARE
+          </span>
+
+          <h1>
+            Solusi Praktis
+            <span>Untuk Rumah & Kendaraan Anda</span>
+          </h1>
+
+          <p>
+            Produk AMASA dirancang untuk membantu kebutuhan sehari-hari,
+            mulai dari perawatan pakaian, perlindungan linen,
+            pewangi kendaraan, hingga perawatan kaca kendaraan.
+          </p>
+
+          <div class="hero-actions">
+
+            <a href="#produk" class="button button-primary">
+              Lihat Produk
+            </a>
+
+            <a href="#tentang" class="button button-secondary">
+              Tentang AMASA
+            </a>
+
+          </div>
+
+        </div>
+
+        <div class="hero-media">
+
+          <!-- Ganti dengan banner AMASA asli -->
+          <div class="media-placeholder">
+            AMASA HERO IMAGE
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         KEUNGGULAN
+         ===================================================== -->
+    <section id="keunggulan" class="features-section">
+
+      <div class="container">
+
+        <div class="feature-grid">
+
+          <article class="feature-item">
+            <div class="feature-icon">01</div>
+
+            <h3>
+              Praktis Digunakan
+            </h3>
+
+            <p>
+              Produk dibuat untuk membantu kebutuhan perawatan
+              sehari-hari dengan penggunaan yang praktis.
+            </p>
+          </article>
+
+
+          <article class="feature-item">
+            <div class="feature-icon">02</div>
+
+            <h3>
+              Banyak Kebutuhan
+            </h3>
+
+            <p>
+              Dari perawatan pakaian dan linen hingga kebutuhan
+              perawatan kendaraan.
+            </p>
+          </article>
+
+
+          <article class="feature-item">
+            <div class="feature-icon">03</div>
+
+            <h3>
+              Pilihan Produk
+            </h3>
+
+            <p>
+              Katalog dapat dikembangkan sesuai produk AMASA
+              yang tersedia.
+            </p>
+          </article>
+
+
+          <article class="feature-item">
+            <div class="feature-icon">04</div>
+
+            <h3>
+              Konsultasi
+            </h3>
+
+            <p>
+              Pelanggan dapat menghubungi tim untuk mendapatkan
+              informasi produk dan penggunaannya.
+            </p>
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TENTANG AMASA
+         ===================================================== -->
+    <section id="tentang" class="about-section">
+
+      <div class="container section-grid">
+
+        <div class="section-copy">
+
+          <span class="section-label">
+            TENTANG AMASA
+          </span>
+
+          <h2>
+            Produk Kebutuhan Rumah Tangga & Perawatan Kendaraan
+          </h2>
+
+          <p>
+            AMASA adalah merek yang dikembangkan oleh
+            PT Adiimasa Distribusi Indonesia untuk menghadirkan
+            produk kebutuhan rumah tangga dan perawatan kendaraan.
+          </p>
+
+          <p>
+            Website ini nantinya dapat menjadi pusat informasi
+            produk, katalog, edukasi penggunaan, serta penghubung
+            pelanggan dengan kanal penjualan resmi.
+          </p>
+
+        </div>
+
+
+        <div class="about-media">
+
+          <div class="media-placeholder">
+            AMASA BRAND IMAGE
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         PRODUK
+         ===================================================== -->
+    <section id="produk" class="products-section">
+
+      <div class="container">
+
+        <div class="section-heading">
+
+          <div>
+
+            <span class="section-label">
+              PRODUK AMASA
+            </span>
+
+            <h2>
+              Produk Unggulan
+            </h2>
+
+          </div>
+
+          <a href="#semua-produk" class="text-link">
+            Lihat Semua Produk →
+          </a>
+
+        </div>
+
+
+        <!-- KATEGORI -->
+        <div id="productCategories" class="product-categories">
+
+          <button
+            type="button"
+            class="category-button active"
+            data-category="all">
+            Semua
+          </button>
+
+          <button
+            type="button"
+            class="category-button"
+            data-category="linen">
+            Linen & Fabric Care
+          </button>
+
+          <button
+            type="button"
+            class="category-button"
+            data-category="pakaian">
+            Pakaian
+          </button>
+
+          <button
+            type="button"
+            class="category-button"
+            data-category="vehicle">
+            Vehicle Care
+          </button>
+
+          <button
+            type="button"
+            class="category-button"
+            data-category="fragrance">
+            Fragrance
+          </button>
+
+        </div>
+
+
+        <!--
+          PRODUCT GRID
+
+          Data produk nantinya dapat berasal dari halaman admin.
+          HTML tidak perlu diubah ketika produk bertambah.
+        -->
+
+        <div id="productGrid" class="product-grid">
+
+
+          <!-- PRODUK 01 -->
+          <article
+            class="product-card"
+            data-category="linen">
+
+            <div class="product-image">
+              AMASA
+              <br>
+              LINEN SPRAY
+            </div>
+
+            <div class="product-content">
+
+              <span class="product-category">
+                LINEN & FABRIC CARE
+              </span>
+
+              <h3>
+                Linen Spray Anti Tungau
+              </h3>
+
+              <p class="product-description">
+                Produk perawatan linen dan kain dengan pilihan
+                varian aroma yang dapat dikembangkan melalui katalog.
+              </p>
+
+              <div class="product-bottom">
+
+                <strong class="product-price">
+                  Lihat Detail
+                </strong>
+
+                <button
+                  type="button"
+                  class="product-detail-button"
+                  data-product-id="linen-spray">
+                  Detail
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- PRODUK 02 -->
+          <article
+            class="product-card"
+            data-category="pakaian">
+
+            <div class="product-image">
+              AMASA
+              <br>
+              PELICIN PAKAIAN
+            </div>
+
+            <div class="product-content">
+
+              <span class="product-category">
+                FABRIC CARE
+              </span>
+
+              <h3>
+                Pelicin Pakaian
+              </h3>
+
+              <p class="product-description">
+                Produk untuk membantu proses perawatan dan
+                penyelesaian pakaian.
+              </p>
+
+              <div class="product-bottom">
+
+                <strong class="product-price">
+                  Lihat Detail
+                </strong>
+
+                <button
+                  type="button"
+                  class="product-detail-button"
+                  data-product-id="pelicin-pakaian">
+                  Detail
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- PRODUK 03 -->
+          <article
+            class="product-card"
+            data-category="fragrance">
+
+            <div class="product-image">
+              AMASA
+              <br>
+              PARFUM MOBIL
+            </div>
+
+            <div class="product-content">
+
+              <span class="product-category">
+                FRAGRANCE
+              </span>
+
+              <h3>
+                Parfum Mobil
+              </h3>
+
+              <p class="product-description">
+                Pewangi kendaraan dengan berbagai pilihan
+                karakter aroma.
+              </p>
+
+              <div class="product-bottom">
+
+                <strong class="product-price">
+                  Lihat Detail
+                </strong>
+
+                <button
+                  type="button"
+                  class="product-detail-button"
+                  data-product-id="parfum-mobil">
+                  Detail
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+
+          <!-- PRODUK 04 -->
+          <article
+            class="product-card"
+            data-category="vehicle">
+
+            <div class="product-image">
+              AMASA
+              <br>
+              WIPER FLUID
+            </div>
+
+            <div class="product-content">
+
+              <span class="product-category">
+                VEHICLE CARE
+              </span>
+
+              <h3>
+                Wiper Fluid
+              </h3>
+
+              <p class="product-description">
+                Cairan perawatan kaca kendaraan untuk membantu
+                menjaga kejernihan kaca saat berkendara.
+              </p>
+
+              <div class="product-bottom">
+
+                <strong class="product-price">
+                  Lihat Detail
+                </strong>
+
+                <button
+                  type="button"
+                  class="product-detail-button"
+                  data-product-id="wiper-fluid">
+                  Detail
+                </button>
+
+              </div>
+
+            </div>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         KATEGORI / SOLUSI
+         ===================================================== -->
+    <section id="solusi" class="solution-section">
+
+      <div class="container">
+
+        <div class="section-heading centered">
+
+          <span class="section-label">
+            PILIH SESUAI KEBUTUHAN
+          </span>
+
+          <h2>
+            Satu Brand, Banyak Solusi
+          </h2>
+
+        </div>
+
+
+        <div class="solution-grid">
+
+          <article>
+            <span>01</span>
+            <h3>Perawatan Linen</h3>
+            <p>
+              Produk untuk kebutuhan linen dan kain di rumah.
+            </p>
+          </article>
+
+          <article>
+            <span>02</span>
+            <h3>Perawatan Pakaian</h3>
+            <p>
+              Produk pendukung untuk pakaian yang lebih rapi.
+            </p>
+          </article>
+
+          <article>
+            <span>03</span>
+            <h3>Perawatan Kendaraan</h3>
+            <p>
+              Produk pendukung untuk kebutuhan kendaraan.
+            </p>
+          </article>
+
+          <article>
+            <span>04</span>
+            <h3>Aroma Kendaraan</h3>
+            <p>
+              Pilihan fragrance untuk menciptakan suasana kendaraan
+              yang lebih nyaman.
+            </p>
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CARA PAKAI
+         ===================================================== -->
+    <section id="cara-pakai" class="process-section">
+
+      <div class="container">
+
+        <div class="section-heading centered">
+
+          <span class="section-label">
+            PENGGUNAAN PRODUK
+          </span>
+
+          <h2>
+            Cara Penggunaan
+          </h2>
+
+          <p>
+            Informasi cara pakai setiap produk akan ditampilkan
+            secara detail pada halaman produk.
+          </p>
+
+        </div>
+
+
+        <div class="process-grid">
+
+          <article>
+
+            <span class="process-number">
+              01
+            </span>
+
+            <h3>
+              Pilih Produk
+            </h3>
+
+            <p>
+              Pilih produk AMASA sesuai kebutuhan Anda.
+            </p>
+
+          </article>
+
+
+          <article>
+
+            <span class="process-number">
+              02
+            </span>
+
+            <h3>
+              Baca Petunjuk
+            </h3>
+
+            <p>
+              Ikuti petunjuk penggunaan dan informasi pada
+              label produk.
+            </p>
+
+          </article>
+
+
+          <article>
+
+            <span class="process-number">
+              03
+            </span>
+
+            <h3>
+              Gunakan Sesuai Kebutuhan
+            </h3>
+
+            <p>
+              Gunakan produk sesuai fungsi dan petunjuk
+              yang tersedia.
+            </p>
+
+          </article>
+
+
+          <article>
+
+            <span class="process-number">
+              04
+            </span>
+
+            <h3>
+              Rasakan Manfaatnya
+            </h3>
+
+            <p>
+              Dapatkan pengalaman penggunaan produk AMASA
+              dalam kebutuhan sehari-hari.
+            </p>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         GALERI
+         ===================================================== -->
+    <section id="galeri" class="gallery-section">
+
+      <div class="container">
+
+        <div class="section-heading">
+
+          <div>
+
+            <span class="section-label">
+              GALERI AMASA
+            </span>
+
+            <h2>
+              Kenali Produk Kami
+            </h2>
+
+          </div>
+
+        </div>
+
+
+        <div id="galleryGrid" class="gallery-grid">
+
+          <button
+            type="button"
+            class="gallery-item"
+            data-gallery="1">
+            <span>
+              PRODUCT GALLERY 01
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="gallery-item"
+            data-gallery="2">
+            <span>
+              PRODUCT GALLERY 02
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="gallery-item"
+            data-gallery="3">
+            <span>
+              PRODUCT GALLERY 03
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="gallery-item"
+            data-gallery="4">
+            <span>
+              PRODUCT GALLERY 04
+            </span>
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         VIDEO
+         ===================================================== -->
+    <section id="video" class="video-section">
+
+      <div class="container">
+
+        <span class="section-label">
+          VIDEO
+        </span>
+
+        <h2>
+          Lihat Cara Kerja Produk
+        </h2>
+
+        <div id="videoGrid" class="video-grid">
+
+          <button
+            type="button"
+            class="video-card"
+            data-video="linen-spray">
+
+            <span class="video-play">
+              ▶
+            </span>
+
+            <span>
+              Linen Spray Anti Tungau
+            </span>
+
+          </button>
+
+
+          <button
+            type="button"
+            class="video-card"
+            data-video="pelicin">
+
+            <span class="video-play">
+              ▶
+            </span>
+
+            <span>
+              Pelicin Pakaian
+            </span>
+
+          </button>
+
+
+          <button
+            type="button"
+            class="video-card"
+            data-video="parfum">
+
+            <span class="video-play">
+              ▶
+            </span>
+
+            <span>
+              Parfum Mobil
+            </span>
+
+          </button>
+
+
+          <button
+            type="button"
+            class="video-card"
+            data-video="wiper">
+
+            <span class="video-play">
+              ▶
+            </span>
+
+            <span>
+              Wiper Fluid
+            </span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         TESTIMONI
+         ===================================================== -->
+    <section id="testimoni" class="testimonials-section">
+
+      <div class="container">
+
+        <div class="section-heading">
+
+          <div>
+
+            <span class="section-label">
+              TESTIMONI
+            </span>
+
+            <h2>
+              Pengalaman Pelanggan
+            </h2>
+
+          </div>
+
+        </div>
+
+
+        <div id="testimonialGrid" class="testimonial-grid">
+
+          <article class="testimonial-card">
+
+            <div class="rating">
+              ★★★★★
+            </div>
+
+            <p>
+              Testimoni pelanggan akan ditampilkan
+              melalui data yang dikelola admin.
+            </p>
+
+            <strong>
+              Nama Pelanggan
+            </strong>
+
+            <span>
+              Pengguna AMASA
+            </span>
+
+          </article>
+
+
+          <article class="testimonial-card">
+
+            <div class="rating">
+              ★★★★★
+            </div>
+
+            <p>
+              Tambahkan pengalaman pelanggan untuk
+              memperkuat informasi produk.
+            </p>
+
+            <strong>
+              Nama Pelanggan
+            </strong>
+
+            <span>
+              Pengguna AMASA
+            </span>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         FAQ
+         ===================================================== -->
+    <section id="faq" class="faq-section">
+
+      <div class="container faq-container">
+
+        <div class="section-heading centered">
+
+          <span class="section-label">
+            FAQ
+          </span>
+
+          <h2>
+            Pertanyaan yang Sering Diajukan
+          </h2>
+
+        </div>
+
+
+        <div id="faqList" class="faq-list">
+
+          <details>
+
+            <summary>
+              Produk apa saja yang dimiliki AMASA?
+            </summary>
+
+            <p>
+              AMASA memiliki lini produk kebutuhan rumah tangga
+              dan perawatan kendaraan. Katalog dapat diperluas
+              melalui halaman admin.
+            </p>
+
+          </details>
+
+
+          <details>
+
+            <summary>
+              Apa saja produk AMASA untuk kebutuhan rumah?
+            </summary>
+
+            <p>
+              Produk yang tersedia saat ini antara lain
+              Linen Spray Anti Tungau dan Pelicin Pakaian.
+            </p>
+
+          </details>
+
+
+          <details>
+
+            <summary>
+              Apa saja produk AMASA untuk kendaraan?
+            </summary>
+
+            <p>
+              Produk kendaraan yang tersedia antara lain
+              Parfum Mobil dan Wiper Fluid.
+            </p>
+
+          </details>
+
+
+          <details>
+
+            <summary>
+              Bagaimana cara menggunakan produk?
+            </summary>
+
+            <p>
+              Petunjuk penggunaan akan tersedia pada halaman
+              detail masing-masing produk.
+            </p>
+
+          </details>
+
+
+          <details>
+
+            <summary>
+              Di mana saya bisa membeli produk AMASA?
+            </summary>
+
+            <p>
+              Kanal pembelian resmi akan ditampilkan pada
+              website dan dapat diperbarui melalui halaman admin.
+            </p>
+
+          </details>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         CTA
+         ===================================================== -->
+    <section id="kontak" class="cta-section">
+
+      <div class="container cta-inner">
+
+        <span class="section-label">
