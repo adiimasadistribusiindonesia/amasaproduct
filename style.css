@@ -124,6 +124,19 @@ button {
   color: var(--amasa-gold);
 }
 
+/* Header: logo dan tagline sejajar dan rapi */
+.header-inner > .logo {
+  flex-direction: row;
+  align-items: flex-end;
+  gap: 14px;
+}
+
+.header-inner > .logo .logo-sub {
+  margin-top: 0;
+  margin-bottom: 2px;
+  white-space: nowrap;
+}
+
 .main-navigation {
   display: flex;
   align-items: center;
@@ -1039,7 +1052,8 @@ h3 {
   #header{z-index:1000}
   .header-inner{min-height:68px;gap:10px}
   .logo-main{font-size:22px}
-  .logo-sub{font-size:7px;margin-top:5px;letter-spacing:.13em}
+  .header-inner > .logo{flex-direction:column;align-items:flex-start;gap:0}
+  .header-inner > .logo .logo-sub{font-size:7px;margin-top:5px;margin-bottom:0;letter-spacing:.13em}
   
   .menu-button{
     display:grid;
