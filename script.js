@@ -173,6 +173,31 @@ async function loadAmasaSettings() {
   }
 }
 
+async function loadAmasaAbout(){
+  if(!amasaDb)return;
+  const {data,error}=await amasaDb.from("amasa_site_content").select("title,content,image_url,is_active").eq("section_slug","about").eq("is_active",true).maybeSingle();
+  if(error||!data)return;
+  const title=getElement("[data-amasa-about-title]");
+  const p1=getElement("[data-amasa-about-p1]");
+  const p2=getElement("[data-amasa-about-p2]");
+  const image=getElement("[data-amasa-about-image]");
+  if(title&&data.title)title.textContent=data.title;
+  try{
+    const about=JSON.parse(data.content||"{}");
+    if(p1&&about.paragraph1)p1.textContent=about.paragraph1;
+    if(p2&&about.paragraph2)p2.textContent=about.paragraph2;
+  }catch(e){}
+  if(image&&data.image_url){
+    image.innerHTML="";
+    const img=document.createElement("img");
+    img.src=data.image_url;
+    img.alt=data.title||"AMASA";
+    image.appendChild(img);
+    image.classList.add("has-image");
+  }
+}
+loadAmasaAbout();
+
 async function loadAmasaHero(){
   if(!amasaDb)return;
   const {data,error}=await amasaDb.from("amasa_site_content").select("title,subtitle,content,image_url,button_text,button_url").eq("section_slug","hero").eq("is_active",true).maybeSingle();
