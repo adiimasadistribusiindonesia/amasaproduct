@@ -154,10 +154,22 @@ async function loadAmasaSettings() {
 
   if (settings.whatsapp) {
     AMASA_CONFIG.whatsappNumber = String(settings.whatsapp).replace(/[^0-9]/g, "");
+    getElements("[data-amasa-whatsapp]").forEach((el) => {
+      el.href = "https://wa.me/" + AMASA_CONFIG.whatsappNumber;
+    });
+    getElements("[data-amasa-whatsapp-text]").forEach((el) => {
+      el.textContent = AMASA_CONFIG.whatsappNumber;
+    });
   }
 
   if (settings.email) {
     AMASA_CONFIG.email = settings.email;
+    getElements("[data-amasa-email]").forEach((el) => {
+      el.href = "mailto:" + settings.email;
+    });
+    getElements("[data-amasa-email-text]").forEach((el) => {
+      el.textContent = settings.email;
+    });
   }
 }
 
