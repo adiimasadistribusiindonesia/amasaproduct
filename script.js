@@ -725,6 +725,31 @@ function openProductModal(productId) {
 }
 
 
+async function loadAmasaGallery(){
+  if(!amasaDb)return;
+  const {data,error}=await amasaDb.from("amasa_site_content").select("title,subtitle,content,is_active").eq("section_slug","gallery").eq("is_active",true).maybeSingle();
+  if(error||!data)return;
+  const label=getElement("[data-amasa-gallery-label]");
+  const title=getElement("[data-amasa-gallery-title]");
+  if(label&&data.subtitle)label.textContent=data.subtitle;
+  if(title&&data.title)title.textContent=data.title;
+  let gallery={};
+  try{gallery=JSON.parse(data.content||"{}")}catch(e){return}
+  const items=Array.isArray(gallery.items)?gallery.items:[];
+  getElements("[data-gallery]").forEach((el,n)=>{
+    const item=items[n];
+    if(item?.image_url){
+      el.style.backgroundImage="linear-gradient(180deg, transparent 40%, rgba(8,20,32,.78)), url('"+String(item.image_url).replace(/'/g,"\\'")+"')";
+      el.style.backgroundSize="cover";
+      el.style.backgroundPosition="center";
+      const span=el.querySelector("span");
+      if(span)span.textContent=item.label||("PRODUCT GALLERY 0"+(n+1));
+      el.dataset.galleryImage=item.image_url;
+    }
+  });
+}
+loadAmasaGallery();
+
 /* =========================================================
    GALLERY MODAL
    ========================================================= */
@@ -751,21 +776,8 @@ getElements("[data-gallery]").forEach((item) => {
 
     galleryModalContent.innerHTML = `
 
-      <div
-        style="
-          aspect-ratio:16/9;
-          display:grid;
-          place-items:center;
-          border-radius:12px;
-          background:
-            linear-gradient(145deg,#e8ecef,#c4cdd3);
-          color:#667383;
-          font-weight:800;
-          letter-spacing:.12em;
-        ">
-
-        AMASA GALLERY ${escapeHTML(galleryId)}
-
+      <div style="aspect-ratio:16/9;display:grid;place-items:center;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#e8ecef,#c4cdd3);">
+        ${item.dataset.galleryImage ? `<img src="${escapeHTML(item.dataset.galleryImage)}" alt="Galeri AMASA ${escapeHTML(galleryId)}" style="width:100%;height:100%;object-fit:cover;">` : `AMASA GALLERY ${escapeHTML(galleryId)}`}
       </div>
 
       <h3 style="margin-top:20px;">
