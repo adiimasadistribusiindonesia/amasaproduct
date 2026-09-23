@@ -729,23 +729,25 @@ async function loadAmasaGallery(){
   if(!amasaDb)return;
   const {data,error}=await amasaDb.from("amasa_site_content").select("title,subtitle,content,is_active").eq("section_slug","gallery").eq("is_active",true).maybeSingle();
   if(error||!data)return;
-  const label=getElement("[data-amasa-gallery-label]");
-  const title=getElement("[data-amasa-gallery-title]");
+  const label=getElement("[data-amasa-gallery-label]"),title=getElement("[data-amasa-gallery-title]"),grid=getElement("#galleryGrid");
   if(label&&data.subtitle)label.textContent=data.subtitle;
   if(title&&data.title)title.textContent=data.title;
-  let gallery={};
-  try{gallery=JSON.parse(data.content||"{}")}catch(e){return}
+  let gallery={};try{gallery=JSON.parse(data.content||"{}")}catch(e){return}
   const items=Array.isArray(gallery.items)?gallery.items:[];
+  if(grid&&items.length){
+    grid.innerHTML=items.map((item,n)=>'<button type="button" class="gallery-item" data-gallery="'+(n+1)+'" data-gallery-image="'+escapeHTML(item.image_url||"")+'"><span>'+escapeHTML(item.label||("PRODUCT GALLERY "+String(n+1).padStart(2,"0")))+"</span></button>").join("");
+  }
   getElements("[data-gallery]").forEach((el,n)=>{
     const item=items[n];
     if(item?.image_url){
       el.style.backgroundImage="linear-gradient(180deg, transparent 40%, rgba(8,20,32,.78)), url('"+String(item.image_url).replace(/'/g,"\\'")+"')";
-      el.style.backgroundSize="cover";
-      el.style.backgroundPosition="center";
-      const span=el.querySelector("span");
-      if(span)span.textContent=item.label||("PRODUCT GALLERY 0"+(n+1));
-      el.dataset.galleryImage=item.image_url;
+      el.style.backgroundSize="cover";el.style.backgroundPosition="center";el.dataset.galleryImage=item.image_url;
     }
+    el.addEventListener("click",()=>{
+      if(!galleryModal||!galleryModalContent)return;
+      galleryModalContent.innerHTML='<div style="aspect-ratio:16/9;display:grid;place-items:center;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#e8ecef,#c4cdd3);">'+(el.dataset.galleryImage?'<img src="'+escapeHTML(el.dataset.galleryImage)+'" alt="Galeri AMASA '+(n+1)+'" style="width:100%;height:100%;object-fit:cover;">':"AMASA GALLERY "+(n+1))+'</div><h3 style="margin-top:20px;">'+escapeHTML(item?.label||"Galeri AMASA")+'</h3>';
+      openModal(galleryModal);
+    });
   });
 }
 loadAmasaGallery();
