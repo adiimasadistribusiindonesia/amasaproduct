@@ -144,6 +144,30 @@ if (menuButton && mainNavigation) {
     });
 
   });
+
+
+  // Tutup menu saat pengguna klik di luar dropdown/sidebar.
+  document.addEventListener("click", (event) => {
+
+    if (!mainNavigation.classList.contains("open")) return;
+
+    if (
+      !mainNavigation.contains(event.target) &&
+      !menuButton.contains(event.target)
+    ) {
+
+      mainNavigation.classList.remove("open");
+
+      menuButton.setAttribute(
+        "aria-expanded",
+        "false"
+      );
+
+      menuButton.textContent = "☰";
+
+    }
+
+  });
 }
 
 
