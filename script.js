@@ -440,7 +440,7 @@ async function loadAmasaProductsFromSupabase() {
         const category = item.amasa_categories || {};
         const categoryMap = {
           linen: "LINEN & FABRIC CARE",
-          pakaian: "FABRIC CARE",
+          pakaian: "PAKAIAN",
           vehicle: "VEHICLE CARE",
           fragrance: "FRAGRANCE"
         };
