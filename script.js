@@ -175,12 +175,14 @@ async function loadAmasaSettings() {
 
 async function loadAmasaAbout(){
   if(!amasaDb)return;
-  const {data,error}=await amasaDb.from("amasa_site_content").select("title,content,image_url,is_active").eq("section_slug","about").eq("is_active",true).maybeSingle();
+  const {data,error}=await amasaDb.from("amasa_site_content").select("title,subtitle,content,image_url,is_active").eq("section_slug","about").eq("is_active",true).maybeSingle();
   if(error||!data)return;
   const title=getElement("[data-amasa-about-title]");
+  const label=getElement("[data-amasa-about-label]");
   const p1=getElement("[data-amasa-about-p1]");
   const p2=getElement("[data-amasa-about-p2]");
   const image=getElement("[data-amasa-about-image]");
+  if(label&&data.subtitle)label.textContent=data.subtitle;
   if(title&&data.title)title.textContent=data.title;
   try{
     const about=JSON.parse(data.content||"{}");
