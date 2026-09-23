@@ -14,7 +14,9 @@ const AMASA_CONFIG = {
   whatsappNumber: "6280000000000",
   whatsappMessage:
     "Halo AMASA, saya ingin mendapatkan informasi mengenai produk AMASA.",
-  currency: "IDR"
+  currency: "IDR",
+  companyName: "PT Adiimasa Distribusi Indonesia",
+  email: ""
 };
 
 
@@ -108,8 +110,64 @@ function escapeHTML(value) {
 
 
 /* =========================================================
+   PENGATURAN WEBSITE DARI SUPABASE
+   ========================================================= */
+const AMASA_SUPABASE_URL = "https://fysaxpqpqexjnlpkbwap.supabase.co";
+const AMASA_SUPABASE_KEY = "sb_publishable_DWRaEZTcNMjhglwN3nqCOw_pua8rsjD";
+const amasaDb = window.supabase
+  ? window.supabase.createClient(AMASA_SUPABASE_URL, AMASA_SUPABASE_KEY)
+  : null;
+
+async function loadAmasaSettings() {
+  if (!amasaDb) return;
+
+  const { data, error } = await amasaDb
+    .from("amasa_site_content")
+    .select("content")
+    .eq("section_slug", "settings")
+    .eq("is_active", true)
+    .maybeSingle();
+
+  if (error || !data) return;
+
+  let settings = {};
+  try {
+    settings = JSON.parse(data.content || "{}");
+  } catch (e) {
+    return;
+  }
+
+  if (settings.brand_name) {
+    AMASA_CONFIG.brandName = settings.brand_name;
+    getElements("[data-amasa-brand]").forEach((el) => {
+      el.textContent = settings.brand_name;
+    });
+    document.title = settings.brand_name + " | Produk Kebutuhan Rumah Tangga";
+  }
+
+  if (settings.company_name) {
+    AMASA_CONFIG.companyName = settings.company_name;
+    getElements("[data-amasa-company]").forEach((el) => {
+      el.textContent = settings.company_name;
+    });
+  }
+
+  if (settings.whatsapp) {
+    AMASA_CONFIG.whatsappNumber = String(settings.whatsapp).replace(/[^0-9]/g, "");
+  }
+
+  if (settings.email) {
+    AMASA_CONFIG.email = settings.email;
+  }
+}
+
+/* Jalankan setelah DOM tersedia. */
+loadAmasaSettings();
+
+/* =========================================================
    MOBILE MENU
    ========================================================= */
+
 
 const menuButton = getElement(".menu-button");
 const mainNavigation = getElement(".main-navigation");
