@@ -400,23 +400,50 @@ function renderProducts(category = "all") {
    FILTER KATEGORI
    ========================================================= */
 
-getElements(".category-button").forEach((button) => {
+async function loadAmasaCategoriesFromSupabase() {
+  const container = getElement("#productCategories");
+  if (!container || !window.supabase) return;
 
-  button.addEventListener("click", () => {
-
-    getElements(".category-button").forEach((item) => {
-      item.classList.remove("active");
-    });
-
-    button.classList.add("active");
-
-    renderProducts(
-      button.getAttribute("data-category") || "all"
+  try {
+    const client = window.supabase.createClient(
+      AMASA_SUPABASE_URL,
+      AMASA_SUPABASE_KEY
     );
 
-  });
+    const { data, error } = await client
+      .from("amasa_categories")
+      .select("id,name,slug")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
 
-});
+    if (error) throw error;
+
+    const categories = Array.isArray(data) ? data : [];
+
+    container.innerHTML = [
+      '<button type="button" class="category-button active" data-category="all">Semua</button>',
+      ...categories.map((category) =>
+        '<button type="button" class="category-button" data-category="' +
+        escapeHTML(category.slug) +
+        '">' +
+        escapeHTML(category.name) +
+        '</button>'
+      )
+    ].join("");
+
+    container.querySelectorAll(".category-button").forEach((button) => {
+      button.addEventListener("click", () => {
+        container.querySelectorAll(".category-button").forEach((item) => {
+          item.classList.remove("active");
+        });
+        button.classList.add("active");
+        renderProducts(button.getAttribute("data-category") || "all");
+      });
+    });
+  } catch (error) {
+    console.error("AMASA categories:", error);
+  }
+}
 
 
 async function loadAmasaProductsFromSupabase() {
@@ -438,14 +465,8 @@ async function loadAmasaProductsFromSupabase() {
     if (Array.isArray(data) && data.length) {
       products = data.map((item) => {
         const category = item.amasa_categories || {};
-        const categoryMap = {
-          linen: "LINEN & FABRIC CARE",
-          pakaian: "PAKAIAN",
-          vehicle: "VEHICLE CARE",
-          fragrance: "FRAGRANCE"
-        };
         const categorySlug = category.slug || "";
-        const categoryLabel = categoryMap[categorySlug] || String(category.name || "AMASA").toUpperCase();
+        const categoryLabel = String(category.name || "AMASA").toUpperCase();
         const price = item.price != null
           ? new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(item.price)
           : "Lihat Detail";
@@ -471,6 +492,7 @@ async function loadAmasaProductsFromSupabase() {
   }
 }
 
+loadAmasaCategoriesFromSupabase();
 loadAmasaProductsFromSupabase();
 
 
