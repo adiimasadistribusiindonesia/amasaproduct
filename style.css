@@ -938,6 +938,21 @@ h3 {
 }
 
 
+
+.footer-column a[data-amasa-whatsapp],
+.footer-column a[data-amasa-email] {
+  display: block;
+  margin: 10px 0;
+  color: #aebbc5;
+  font-size: 13px;
+  word-break: break-word;
+}
+
+.footer-column a[data-amasa-whatsapp]:hover,
+.footer-column a[data-amasa-email]:hover {
+  color: var(--amasa-gold-light);
+}
+
 /* =========================================================
    MODALS / POPUPS
    ========================================================= */
