@@ -735,7 +735,7 @@ async function loadAmasaGallery(){
   let gallery={};try{gallery=JSON.parse(data.content||"{}")}catch(e){return}
   const items=Array.isArray(gallery.items)?gallery.items:[];
   if(grid&&items.length){
-    grid.innerHTML=items.map((item,n)=>'<button type="button" class="gallery-item" data-gallery="'+(n+1)+'" data-gallery-image="'+escapeHTML(item.image_url||"")+'"><span>'+escapeHTML(item.label||("PRODUCT GALLERY "+String(n+1).padStart(2,"0")))+"</span></button>").join("");
+    grid.innerHTML=items.map((item,n)=>'<button type="button" class="gallery-item" data-gallery="'+(n+1)+'" data-gallery-image="'+escapeHTML(item.image_url||"")+'"></button>").join("");
   }
   getElements("[data-gallery]").forEach((el,n)=>{
     const item=items[n];
