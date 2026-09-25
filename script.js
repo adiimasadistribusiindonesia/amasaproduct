@@ -128,7 +128,7 @@ async function loadAmasaSettings() {
         apikey: AMASA_SUPABASE_KEY,
         Authorization: "Bearer " + AMASA_SUPABASE_KEY
       },
-      cache: "no-store"
+      cache: "default"
     });
     if (!response.ok) throw new Error("HTTP " + response.status);
     const rows = await response.json();
@@ -172,7 +172,7 @@ async function loadAmasaAbout(){
         apikey:AMASA_SUPABASE_KEY,
         Authorization:"Bearer "+AMASA_SUPABASE_KEY
       },
-      cache:"no-store"
+      cache: "default"
     });
     if(!response.ok)throw new Error("HTTP "+response.status);
     const rows=await response.json();
@@ -250,7 +250,7 @@ async function loadAmasaHero(){
         apikey:AMASA_SUPABASE_KEY,
         Authorization:"Bearer "+AMASA_SUPABASE_KEY
       },
-      cache:"no-store"
+      cache: "default"
     });
     if(!response.ok)throw new Error("HTTP "+response.status);
     const rows=await response.json();
@@ -800,7 +800,7 @@ async function loadAmasaGallery(){
         apikey:AMASA_SUPABASE_KEY,
         Authorization:"Bearer "+AMASA_SUPABASE_KEY
       },
-      cache:"no-store"
+      cache: "default"
     });
     if(!response.ok)throw new Error("HTTP "+response.status);
     const rows=await response.json();
@@ -923,7 +923,7 @@ async function loadAmasaVideo(){
         apikey:AMASA_SUPABASE_KEY,
         Authorization:"Bearer "+AMASA_SUPABASE_KEY
       },
-      cache:"no-store"
+      cache: "default"
     });
     if(!response.ok)throw new Error("HTTP "+response.status);
     const rows=await response.json();
