@@ -889,75 +889,72 @@ const videoModalContent =
   getElement("#videoModalContent");
 
 
-getElements("[data-video]").forEach((item) => {
+async function loadAmasaVideo(){
+  try{
+    const url=AMASA_SUPABASE_URL+
+      "/rest/v1/amasa_site_content?select=title,subtitle,content,is_active"+
+      "&section_slug=eq.video&is_active=eq.true&limit=1";
+    const response=await fetch(url,{
+      headers:{
+        apikey:AMASA_SUPABASE_KEY,
+        Authorization:"Bearer "+AMASA_SUPABASE_KEY
+      },
+      cache:"no-store"
+    });
+    if(!response.ok)throw new Error("HTTP "+response.status);
+    const rows=await response.json();
+    const data=rows&&rows[0];
+    if(!data)return;
 
-  item.addEventListener("click", () => {
+    const label=getElement("[data-amasa-video-label]");
+    const title=getElement("[data-amasa-video-title]");
+    const grid=getElement("#videoGrid");
+    if(label&&data.subtitle)label.textContent=data.subtitle;
+    if(title&&data.title)title.textContent=data.title;
+    if(!grid)return;
 
-    const videoId =
-      item.getAttribute("data-video");
+    let videoData={};
+    try{videoData=JSON.parse(data.content||"{}")}catch(e){return}
+    const items=Array.isArray(videoData.items)?videoData.items:[];
 
+    if(!items.length)return;
 
-    if (!videoModal || !videoModalContent) {
-      return;
-    }
+    grid.innerHTML=items.map((item,n)=>
+      '<button type="button" class="video-card" data-video-index="'+n+'">'+
+      '<span class="video-play">▶</span>'+
+      '<span>'+escapeHTML(item.title||("Video AMASA "+(n+1)))+'</span>'+
+      '</button>'
+    ).join("");
 
+    getElements("[data-video-index]").forEach((card)=>{
+      card.addEventListener("click",()=>{
+        const item=items[Number(card.dataset.videoIndex)];
+        if(!item||!item.url||!videoModal||!videoModalContent)return;
 
-    const videoTitles = {
+        const url=String(item.url);
+        const safeUrl=escapeHTML(url);
+        let media="";
 
-      "linen-spray":
-        "Linen Spray Anti Tungau",
+        const yt=url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+        if(yt){
+          media='<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><iframe src="https://www.youtube.com/embed/'+yt[1]+'" title="'+escapeHTML(item.title||"Video AMASA")+'" style="width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
+        }else if(/\.(mp4|webm|ogg)(?:\?|#|$)/i.test(url)){
+          media='<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><video src="'+safeUrl+'" controls playsinline style="width:100%;height:100%;object-fit:contain;"></video></div>';
+        }else{
+          media='<div style="aspect-ratio:16/9;display:grid;place-items:center;border-radius:12px;background:#0b1827;color:#fff;padding:24px;text-align:center;"><a class="button button-primary" href="'+safeUrl+'" target="_blank" rel="noopener">Buka Video</a></div>';
+        }
 
-      "pelicin":
-        "Pelicin Pakaian",
+        videoModalContent.innerHTML=media+
+          '<h3 style="margin-top:20px;">'+escapeHTML(item.title||"Video AMASA")+'</h3>';
+        openModal(videoModal);
+      });
+    });
+  }catch(e){
+    console.warn("AMASA Video REST:",e);
+  }
+}
+loadAmasaVideo();
 
-      "parfum":
-        "Parfum Mobil",
-
-      "wiper":
-        "Wiper Fluid"
-
-    };
-
-
-    const title =
-      videoTitles[videoId] ||
-      "Video AMASA";
-
-
-    videoModalContent.innerHTML = `
-
-      <div
-        style="
-          aspect-ratio:16/9;
-          display:grid;
-          place-items:center;
-          border-radius:12px;
-          background:#0b1827;
-          color:#fff;
-          font-size:40px;
-        ">
-
-        ▶
-
-      </div>
-
-      <h3 style="margin-top:20px;">
-        ${escapeHTML(title)}
-      </h3>
-
-      <p style="color:#667383;">
-        Video produk dapat dihubungkan ke file video,
-        YouTube, atau sumber video resmi melalui halaman admin.
-      </p>
-
-    `;
-
-
-    openModal(videoModal);
-
-  });
-
-});
 
 
 /* =========================================================
