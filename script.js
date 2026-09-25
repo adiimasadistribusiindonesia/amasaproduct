@@ -802,9 +802,11 @@ async function loadAmasaGallery(){
 
     if(!items.length){
       if(grid)grid.innerHTML="";
+      if(section)section.hidden=true;
       return;
     }
 
+    if(section)section.hidden=false;
     if(grid){
       grid.innerHTML=items.map((item,n)=>
         '<button type="button" class="gallery-item" data-gallery="'+(n+1)+'" data-gallery-image="'+escapeHTML(item.image_url||"")+'"></button>'
@@ -914,6 +916,7 @@ async function loadAmasaVideo(){
     const label=getElement("[data-amasa-video-label]");
     const title=getElement("[data-amasa-video-title]");
     const grid=getElement("#videoGrid");
+    const section=grid?.closest("section");
     if(label)label.textContent=data.subtitle||"";
     if(title)title.textContent=data.title||"";
     if(!grid)return;
@@ -924,9 +927,11 @@ async function loadAmasaVideo(){
 
     if(!items.length){
       grid.innerHTML="";
+      if(section)section.hidden=true;
       return;
     }
 
+    if(section)section.hidden=false;
     grid.innerHTML=items.map((item,n)=>
       '<button type="button" class="video-card" data-video-index="'+n+'">'+
       '<span class="video-play">▶</span>'+
