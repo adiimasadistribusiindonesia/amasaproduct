@@ -810,6 +810,7 @@ async function loadAmasaGallery(){
     const label=getElement("[data-amasa-gallery-label]");
     const title=getElement("[data-amasa-gallery-title]");
     const grid=getElement("#galleryGrid");
+    const section=grid?.closest("section");
     if(label&&data.subtitle)label.textContent=data.subtitle;
     if(title&&data.title)title.textContent=data.title;
 
