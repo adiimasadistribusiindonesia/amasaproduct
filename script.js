@@ -486,6 +486,8 @@ function renderProducts(category = "all") {
 
               </div>
 
+              ${renderMarketplaceButtons(product.marketplaceLinks)}
+
             </div>
 
           </article>
@@ -512,6 +514,37 @@ function renderProducts(category = "all") {
 
 }
 
+
+function renderMarketplaceButtons(links = {}) {
+  const marketplaces = [
+    ["shopee", "Shopee"],
+    ["tiktok", "TikTok Shop"],
+    ["tokopedia", "Tokopedia"],
+    ["lazada", "Lazada"],
+    ["toco", "Toco"],
+    ["blibli", "Blibli"]
+  ];
+
+  const buttons = marketplaces
+    .filter(([key]) => typeof links[key] === "string" && links[key].trim())
+    .map(([key, label]) => {
+      const url = links[key].trim();
+      return `
+        <a class="marketplace-button marketplace-${key}"
+           href="${escapeHTML(url)}"
+           target="_blank"
+           rel="noopener noreferrer"
+           data-marketplace-button>
+          ${escapeHTML(label)}
+        </a>
+      `;
+    })
+    .join("");
+
+  return buttons
+    ? `<div class="marketplace-buttons"><span class="marketplace-label">Beli di:</span>${buttons}</div>`
+    : "";
+}
 
 /* =========================================================
    FILTER KATEGORI
@@ -573,7 +606,7 @@ async function loadAmasaProductsFromSupabase() {
 
     const { data, error } = await client
       .from("amasa_products")
-      .select("id,name,slug,sku,short_description,description,image_url,price,sort_order,is_featured,amasa_categories(name,slug)")
+      .select("id,name,slug,sku,short_description,description,image_url,price,marketplace_links,sort_order,is_featured,amasa_categories(name,slug)")
       .eq("is_active", true)
       .order("sort_order", { ascending: true });
 
@@ -597,7 +630,8 @@ async function loadAmasaProductsFromSupabase() {
           description: item.short_description || "",
           image: item.image_url || "",
           badge: categoryLabel,
-          details: item.description || item.short_description || "Detail produk AMASA."
+          details: item.description || item.short_description || "Detail produk AMASA.",
+          marketplaceLinks: item.marketplace_links && typeof item.marketplace_links === "object" ? item.marketplace_links : {}
         };
       });
     }
