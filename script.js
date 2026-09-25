@@ -119,83 +119,91 @@ const amasaDb = window.supabase
   : null;
 
 async function loadAmasaSettings() {
-  if (!amasaDb) return;
-
-  const { data, error } = await amasaDb
-    .from("amasa_site_content")
-    .select("content")
-    .eq("section_slug", "settings")
-    .eq("is_active", true)
-    .maybeSingle();
-
-  if (error || !data) return;
-
-  let settings = {};
   try {
-    settings = JSON.parse(data.content || "{}");
+    const url = AMASA_SUPABASE_URL +
+      "/rest/v1/amasa_site_content?select=content" +
+      "&section_slug=eq.settings&is_active=eq.true&limit=1";
+    const response = await fetch(url, {
+      headers: {
+        apikey: AMASA_SUPABASE_KEY,
+        Authorization: "Bearer " + AMASA_SUPABASE_KEY
+      },
+      cache: "no-store"
+    });
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const rows = await response.json();
+    const data = rows && rows[0];
+    if (!data) return;
+
+    let settings = {};
+    try { settings = JSON.parse(data.content || "{}"); } catch (e) { return; }
+
+    if (settings.brand_name) {
+      AMASA_CONFIG.brandName = settings.brand_name;
+      getElements("[data-amasa-brand]").forEach((el) => el.textContent = settings.brand_name);
+      document.title = settings.brand_name + " | Produk Kebutuhan Rumah Tangga";
+    }
+    if (settings.company_name) {
+      AMASA_CONFIG.companyName = settings.company_name;
+      getElements("[data-amasa-company]").forEach((el) => el.textContent = settings.company_name);
+    }
+    if (settings.whatsapp) {
+      AMASA_CONFIG.whatsappNumber = String(settings.whatsapp).replace(/[^0-9]/g, "");
+      getElements("[data-amasa-whatsapp]").forEach((el) => el.href = "https://wa.me/" + AMASA_CONFIG.whatsappNumber);
+      getElements("[data-amasa-whatsapp-text]").forEach((el) => el.textContent = AMASA_CONFIG.whatsappNumber);
+    }
+    if (settings.email) {
+      AMASA_CONFIG.email = settings.email;
+      getElements("[data-amasa-email]").forEach((el) => el.href = "mailto:" + settings.email);
+      getElements("[data-amasa-email-text]").forEach((el) => el.textContent = settings.email);
+    }
   } catch (e) {
-    return;
-  }
-
-  if (settings.brand_name) {
-    AMASA_CONFIG.brandName = settings.brand_name;
-    getElements("[data-amasa-brand]").forEach((el) => {
-      el.textContent = settings.brand_name;
-    });
-    document.title = settings.brand_name + " | Produk Kebutuhan Rumah Tangga";
-  }
-
-  if (settings.company_name) {
-    AMASA_CONFIG.companyName = settings.company_name;
-    getElements("[data-amasa-company]").forEach((el) => {
-      el.textContent = settings.company_name;
-    });
-  }
-
-  if (settings.whatsapp) {
-    AMASA_CONFIG.whatsappNumber = String(settings.whatsapp).replace(/[^0-9]/g, "");
-    getElements("[data-amasa-whatsapp]").forEach((el) => {
-      el.href = "https://wa.me/" + AMASA_CONFIG.whatsappNumber;
-    });
-    getElements("[data-amasa-whatsapp-text]").forEach((el) => {
-      el.textContent = AMASA_CONFIG.whatsappNumber;
-    });
-  }
-
-  if (settings.email) {
-    AMASA_CONFIG.email = settings.email;
-    getElements("[data-amasa-email]").forEach((el) => {
-      el.href = "mailto:" + settings.email;
-    });
-    getElements("[data-amasa-email-text]").forEach((el) => {
-      el.textContent = settings.email;
-    });
+    console.warn("AMASA Settings REST:", e);
   }
 }
 
 async function loadAmasaAbout(){
-  if(!amasaDb)return;
-  const {data,error}=await amasaDb.from("amasa_site_content").select("title,subtitle,content,image_url,is_active").eq("section_slug","about").eq("is_active",true).maybeSingle();
-  if(error||!data)return;
-  const title=getElement("[data-amasa-about-title]");
-  const label=getElement("[data-amasa-about-label]");
-  const p1=getElement("[data-amasa-about-p1]");
-  const p2=getElement("[data-amasa-about-p2]");
-  const image=getElement("[data-amasa-about-image]");
-  if(label&&data.subtitle)label.textContent=data.subtitle;
-  if(title&&data.title)title.textContent=data.title;
   try{
-    const about=JSON.parse(data.content||"{}");
-    if(p1&&about.paragraph1)p1.textContent=about.paragraph1;
-    if(p2&&about.paragraph2)p2.textContent=about.paragraph2;
-  }catch(e){}
-  if(image&&data.image_url){
-    image.innerHTML="";
-    const img=document.createElement("img");
-    img.src=data.image_url;
-    img.alt=data.title||"AMASA";
-    image.appendChild(img);
-    image.classList.add("has-image");
+    const url=AMASA_SUPABASE_URL+
+      "/rest/v1/amasa_site_content?select=title,subtitle,content,image_url,is_active"+
+      "&section_slug=eq.about&is_active=eq.true&limit=1";
+    const response=await fetch(url,{
+      headers:{
+        apikey:AMASA_SUPABASE_KEY,
+        Authorization:"Bearer "+AMASA_SUPABASE_KEY
+      },
+      cache:"no-store"
+    });
+    if(!response.ok)throw new Error("HTTP "+response.status);
+    const rows=await response.json();
+    const data=rows&&rows[0];
+    if(!data)return;
+
+    const title=getElement("[data-amasa-about-title]");
+    const label=getElement("[data-amasa-about-label]");
+    const p1=getElement("[data-amasa-about-p1]");
+    const p2=getElement("[data-amasa-about-p2]");
+    const image=getElement("[data-amasa-about-image]");
+
+    if(label&&data.subtitle)label.textContent=data.subtitle;
+    if(title&&data.title)title.textContent=data.title;
+
+    try{
+      const about=JSON.parse(data.content||"{}");
+      if(p1&&about.paragraph1)p1.textContent=about.paragraph1;
+      if(p2&&about.paragraph2)p2.textContent=about.paragraph2;
+    }catch(e){}
+
+    if(image&&data.image_url){
+      image.innerHTML="";
+      const img=document.createElement("img");
+      img.src=data.image_url+"?v="+Date.now();
+      img.alt=data.title||"AMASA";
+      image.appendChild(img);
+      image.classList.add("has-image");
+    }
+  }catch(e){
+    console.warn("AMASA About REST:",e);
   }
 }
 loadAmasaAbout();
@@ -766,30 +774,59 @@ function openProductModal(productId) {
 
 
 async function loadAmasaGallery(){
-  if(!amasaDb)return;
-  const {data,error}=await amasaDb.from("amasa_site_content").select("title,subtitle,content,is_active").eq("section_slug","gallery").eq("is_active",true).maybeSingle();
-  if(error||!data)return;
-  const label=getElement("[data-amasa-gallery-label]"),title=getElement("[data-amasa-gallery-title]"),grid=getElement("#galleryGrid");
-  if(label&&data.subtitle)label.textContent=data.subtitle;
-  if(title&&data.title)title.textContent=data.title;
-  let gallery={};try{gallery=JSON.parse(data.content||"{}")}catch(e){return}
-  const items=Array.isArray(gallery.items)?gallery.items:[];
-  if(grid&&items.length){
-    grid.innerHTML=items.map((item,n)=>'<button type="button" class="gallery-item" data-gallery="'+(n+1)+'" data-gallery-image="'+escapeHTML(item.image_url||"")+'"></button>").join("");
-  }
-  getElements("[data-gallery]").forEach((el,n)=>{
-    const item=items[n];
-    if(item?.image_url){
-      el.style.backgroundImage="linear-gradient(180deg, transparent 40%, rgba(8,20,32,.78)), url('"+String(item.image_url).replace(/'/g,"\\'")+"')";
-      el.style.backgroundSize="cover";el.style.backgroundPosition="center";el.dataset.galleryImage=item.image_url;
-    }
-    el.addEventListener("click",()=>{
-      if(!galleryModal||!galleryModalContent)return;
-      galleryModalContent.innerHTML='<div style="aspect-ratio:16/9;display:grid;place-items:center;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#e8ecef,#c4cdd3);">'+(el.dataset.galleryImage?'<img src="'+escapeHTML(el.dataset.galleryImage)+'" alt="Galeri AMASA '+(n+1)+'" style="width:100%;height:100%;object-fit:cover;">':"AMASA GALLERY "+(n+1))+'</div><h3 style="margin-top:20px;">'+escapeHTML(item?.label||"Galeri AMASA")+'</h3>';
-      openModal(galleryModal);
+  try{
+    const url=AMASA_SUPABASE_URL+
+      "/rest/v1/amasa_site_content?select=title,subtitle,content,is_active"+
+      "&section_slug=eq.gallery&is_active=eq.true&limit=1";
+    const response=await fetch(url,{
+      headers:{
+        apikey:AMASA_SUPABASE_KEY,
+        Authorization:"Bearer "+AMASA_SUPABASE_KEY
+      },
+      cache:"no-store"
     });
-  });
+    if(!response.ok)throw new Error("HTTP "+response.status);
+    const rows=await response.json();
+    const data=rows&&rows[0];
+    if(!data)return;
+
+    const label=getElement("[data-amasa-gallery-label]");
+    const title=getElement("[data-amasa-gallery-title]");
+    const grid=getElement("#galleryGrid");
+    if(label&&data.subtitle)label.textContent=data.subtitle;
+    if(title&&data.title)title.textContent=data.title;
+
+    let gallery={};
+    try{gallery=JSON.parse(data.content||"{}")}catch(e){return}
+    const items=Array.isArray(gallery.items)?gallery.items:[];
+
+    if(grid){
+      grid.innerHTML=items.map((item,n)=>
+        '<button type="button" class="gallery-item" data-gallery="'+(n+1)+'" data-gallery-image="'+escapeHTML(item.image_url||"")+'"></button>'
+      ).join("");
+    }
+
+    getElements("[data-gallery]").forEach((el,n)=>{
+      const item=items[n];
+      if(item?.image_url){
+        el.style.backgroundImage="linear-gradient(180deg, transparent 40%, rgba(8,20,32,.78)), url('"+String(item.image_url).replace(/'/g,"\\'")+"')";
+        el.style.backgroundSize="cover";
+        el.style.backgroundPosition="center";
+        el.dataset.galleryImage=item.image_url;
+      }
+      el.addEventListener("click",()=>{
+        if(!galleryModal||!galleryModalContent)return;
+        galleryModalContent.innerHTML='<div style="aspect-ratio:16/9;display:grid;place-items:center;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#e8ecef,#c4cdd3);">'+
+          (el.dataset.galleryImage?'<img src="'+escapeHTML(el.dataset.galleryImage)+'" alt="Galeri AMASA '+(n+1)+'" style="width:100%;height:100%;object-fit:cover;">':"AMASA GALLERY "+(n+1))+
+          '</div><h3 style="margin-top:20px;">'+escapeHTML(item?.label||"Galeri AMASA")+'</h3>';
+        openModal(galleryModal);
+      });
+    });
+  }catch(e){
+    console.warn("AMASA Gallery REST:",e);
+  }
 }
+
 loadAmasaGallery();
 
 /* =========================================================
