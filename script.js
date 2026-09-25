@@ -631,6 +631,23 @@ function closeModal(modal) {
 
   if (!modal) return;
 
+  // Stop any video when the video modal is closed.
+  if (modal.id === "videoModal") {
+    modal.querySelectorAll("video").forEach((video) => {
+      try {
+        video.pause();
+        video.currentTime = 0;
+      } catch (e) {}
+    });
+
+    modal.querySelectorAll("iframe").forEach((iframe) => {
+      iframe.src = "about:blank";
+    });
+
+    const content = modal.querySelector("#videoModalContent");
+    if (content) content.innerHTML = "";
+  }
+
   modal.hidden = true;
 
   document.body.classList.remove("modal-open");
