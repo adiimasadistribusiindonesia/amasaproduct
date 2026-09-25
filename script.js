@@ -282,6 +282,45 @@ loadAmasaHero();
 loadAmasaSettings();
 
 /* =========================================================
+   WEBSITE ANALYTICS
+   Menghitung pengunjung unik, sesi, dan pageview AMASA.
+   ID pengunjung disimpan di browser dan tidak memakai data pribadi.
+   ========================================================= */
+function getAmasaBrowserId(storage, key) {
+  try {
+    let id = storage.getItem(key);
+    if (!id) {
+      id = (window.crypto && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : "amasa-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+      storage.setItem(key, id);
+    }
+    return id;
+  } catch (e) {
+    return "amasa-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+  }
+}
+
+async function trackAmasaVisit() {
+  if (!amasaDb) return;
+  try {
+    const visitorId = getAmasaBrowserId(localStorage, "amasa_visitor_id");
+    const sessionId = getAmasaBrowserId(sessionStorage, "amasa_session_id");
+    const pagePath = window.location.pathname + window.location.hash;
+
+    await amasaDb.rpc("track_amasa_visit", {
+      p_visitor_id: visitorId,
+      p_session_id: sessionId,
+      p_page_path: pagePath || "/"
+    });
+  } catch (e) {
+    console.warn("AMASA Analytics:", e);
+  }
+}
+
+trackAmasaVisit();
+
+/* =========================================================
    MOBILE MENU
    ========================================================= */
 
