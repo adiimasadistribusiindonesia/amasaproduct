@@ -185,8 +185,8 @@ async function loadAmasaAbout(){
     const p2=getElement("[data-amasa-about-p2]");
     const image=getElement("[data-amasa-about-image]");
 
-    if(label&&data.subtitle)label.textContent=data.subtitle;
-    if(title&&data.title)title.textContent=data.title;
+    if(label)label.textContent=data.subtitle||"";
+    if(title)title.textContent=data.title||"";
 
     try{
       const about=JSON.parse(data.content||"{}");
@@ -800,6 +800,11 @@ async function loadAmasaGallery(){
     try{gallery=JSON.parse(data.content||"{}")}catch(e){return}
     const items=Array.isArray(gallery.items)?gallery.items:[];
 
+    if(!items.length){
+      if(grid)grid.innerHTML="";
+      return;
+    }
+
     if(grid){
       grid.innerHTML=items.map((item,n)=>
         '<button type="button" class="gallery-item" data-gallery="'+(n+1)+'" data-gallery-image="'+escapeHTML(item.image_url||"")+'"></button>'
@@ -909,8 +914,8 @@ async function loadAmasaVideo(){
     const label=getElement("[data-amasa-video-label]");
     const title=getElement("[data-amasa-video-title]");
     const grid=getElement("#videoGrid");
-    if(label&&data.subtitle)label.textContent=data.subtitle;
-    if(title&&data.title)title.textContent=data.title;
+    if(label)label.textContent=data.subtitle||"";
+    if(title)title.textContent=data.title||"";
     if(!grid)return;
 
     let videoData={};
