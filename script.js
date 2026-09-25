@@ -974,6 +974,55 @@ async function loadAmasaTestimonials(){
 loadAmasaTestimonials();
 
 
+async function loadAmasaFaq(){
+  try{
+    const url=AMASA_SUPABASE_URL+
+      "/rest/v1/amasa_site_content?select=title,subtitle,content,is_active"+
+      "&section_slug=eq.faq&is_active=eq.true&limit=1";
+    const response=await fetch(url,{headers:{
+      apikey:AMASA_SUPABASE_KEY,
+      Authorization:"Bearer "+AMASA_SUPABASE_KEY
+    },cache:"default"});
+    if(!response.ok)throw new Error("HTTP "+response.status);
+    const rows=await response.json();
+    const data=rows&&rows[0];
+    const list=getElement("#faqList");
+    const section=list?.closest("section");
+    if(!list)return;
+    if(!data){
+      list.innerHTML="";
+      if(section)section.hidden=true;
+      return;
+    }
+    const label=getElement("[data-amasa-faq-label]");
+    const title=getElement("[data-amasa-faq-title]");
+    if(label)label.textContent=data.subtitle||"";
+    if(title)title.textContent=data.title||"";
+
+    let faqData={};
+    try{faqData=JSON.parse(data.content||"{}")}catch(e){}
+    const items=Array.isArray(faqData.items)
+      ? faqData.items.filter(item=>item&&(item.question||item.answer))
+      : [];
+    if(!items.length){
+      list.innerHTML="";
+      if(section)section.hidden=true;
+      return;
+    }
+    if(section)section.hidden=false;
+    list.innerHTML=items.map(item=>
+      '<details>'+
+      '<summary>'+escapeHTML(item.question||"Pertanyaan")+'</summary>'+
+      '<p>'+escapeHTML(item.answer||"")+'</p>'+
+      '</details>'
+    ).join("");
+  }catch(e){
+    console.warn("AMASA FAQ REST:",e);
+  }
+}
+loadAmasaFaq();
+
+
 async function loadAmasaVideo(){
   try{
     const url=AMASA_SUPABASE_URL+
