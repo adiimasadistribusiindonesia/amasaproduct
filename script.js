@@ -990,8 +990,7 @@ async function loadAmasaFaq(){
     const section=list?.closest("section");
     if(!list)return;
     if(!data){
-      list.innerHTML="";
-      if(section)section.hidden=true;
+      if(section)section.hidden=false;
       return;
     }
     const label=getElement("[data-amasa-faq-label]");
@@ -1005,8 +1004,7 @@ async function loadAmasaFaq(){
       ? faqData.items.filter(item=>item&&(item.question||item.answer))
       : [];
     if(!items.length){
-      list.innerHTML="";
-      if(section)section.hidden=true;
+      if(section)section.hidden=false;
       return;
     }
     if(section)section.hidden=false;
