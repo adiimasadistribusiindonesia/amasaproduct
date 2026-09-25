@@ -1293,7 +1293,6 @@ summary:focus-visible {
 }
 
 </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
@@ -2370,75 +2369,9 @@ summary:focus-visible {
   </div>
 
 
-  <script src="script.js?v=20260925-video-1"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="script.js?v=20260925-video-2"></script>
 
-  <script>
-  /* AMASA HERO DIRECT SYNC - independent fallback */
-  (async function () {
-    try {
-      const base = "https://fysaxpqpqexjnlpkbwap.supabase.co";
-      const key = "sb_publishable_DWRaEZTcNMjhglwN3nqCOw_pua8rsjD";
-      const url = base + "/rest/v1/amasa_site_content" +
-        "?select=title,subtitle,content,image_url,button_text,button_url" +
-        "&section_slug=eq.hero&is_active=eq.true&limit=1";
-
-      const res = await fetch(url, {
-        method: "GET",
-        headers: {
-          "apikey": key,
-          "Authorization": "Bearer " + key
-        },
-        cache: "no-store"
-      });
-
-      if (!res.ok) return;
-      const rows = await res.json();
-      const data = rows && rows[0];
-      if (!data) return;
-
-      const title = document.querySelector("[data-amasa-hero-title]");
-      const subtitle = document.querySelector("[data-amasa-hero-subtitle]");
-      const body = document.querySelector("[data-amasa-hero-content]");
-      const button = document.querySelector("[data-amasa-hero-button]");
-      const media = document.querySelector("[data-amasa-hero-image]");
-
-      if (subtitle && data.subtitle) subtitle.textContent = data.subtitle;
-      if (body && data.content) body.textContent = data.content;
-
-      if (title && data.title) {
-        const parts = data.title.split(" Untuk ");
-        title.textContent = data.title;
-        if (parts.length === 2) {
-          title.innerHTML =
-            document.createTextNode(parts[0]).textContent +
-            " <span>Untuk " +
-            document.createTextNode(parts[1]).textContent +
-            "</span>";
-        }
-      }
-
-      if (button) {
-        if (data.button_text) button.textContent = data.button_text;
-        if (data.button_url) button.href = data.button_url;
-      }
-
-      if (media && data.image_url) {
-        media.innerHTML = "";
-        const img = document.createElement("img");
-        img.src = data.image_url + "?v=" + Date.now();
-        img.alt = data.title || "AMASA";
-        img.loading = "eager";
-        img.style.width = "100%";
-        img.style.height = "100%";
-        img.style.objectFit = "cover";
-        media.appendChild(img);
-        media.classList.add("has-image");
-      }
-    } catch (err) {
-      console.warn("AMASA direct hero sync:", err);
-    }
-  })();
-  </script>
 
 </body>
 </html>
