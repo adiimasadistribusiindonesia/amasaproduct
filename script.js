@@ -914,6 +914,66 @@ const videoModalContent =
   getElement("#videoModalContent");
 
 
+async function loadAmasaTestimonials(){
+  try{
+    const url=AMASA_SUPABASE_URL+
+      "/rest/v1/amasa_site_content?select=title,subtitle,content,is_active"+
+      "&section_slug=eq.testimoni&is_active=eq.true&limit=1";
+    const response=await fetch(url,{
+      headers:{
+        apikey:AMASA_SUPABASE_KEY,
+        Authorization:"Bearer "+AMASA_SUPABASE_KEY
+      },
+      cache:"default"
+    });
+    if(!response.ok)throw new Error("HTTP "+response.status);
+    const rows=await response.json();
+    const data=rows&&rows[0];
+    const grid=getElement("#testimonialGrid");
+    const section=grid?.closest("section");
+    if(!grid)return;
+    if(!data){
+      grid.innerHTML="";
+      if(section)section.hidden=true;
+      return;
+    }
+
+    const label=getElement("[data-amasa-testimonial-label]");
+    const title=getElement("[data-amasa-testimonial-title]");
+    if(label)label.textContent=data.subtitle||"";
+    if(title)title.textContent=data.title||"";
+
+    let testimonialData={};
+    try{testimonialData=JSON.parse(data.content||"{}")}catch(e){}
+    const items=Array.isArray(testimonialData.items)
+      ? testimonialData.items.filter(item=>item&&(item.name||item.text))
+      : [];
+
+    if(!items.length){
+      grid.innerHTML="";
+      if(section)section.hidden=true;
+      return;
+    }
+
+    if(section)section.hidden=false;
+    grid.innerHTML=items.map(item=>{
+      const rating=Math.min(5,Math.max(1,Number(item.rating)||5));
+      return '<article class="testimonial-card">'+
+        '<div class="rating" aria-label="Rating '+rating+' dari 5">'+
+        "★".repeat(rating)+"☆".repeat(5-rating)+
+        '</div>'+
+        '<p>'+escapeHTML(item.text||"")+'</p>'+
+        '<strong>'+escapeHTML(item.name||"Pelanggan AMASA")+'</strong>'+
+        '<span>'+escapeHTML(item.role||"Pengguna AMASA")+'</span>'+
+        '</article>';
+    }).join("");
+  }catch(e){
+    console.warn("AMASA Testimoni REST:",e);
+  }
+}
+loadAmasaTestimonials();
+
+
 async function loadAmasaVideo(){
   try{
     const url=AMASA_SUPABASE_URL+
