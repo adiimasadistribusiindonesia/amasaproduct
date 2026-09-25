@@ -201,31 +201,71 @@ async function loadAmasaAbout(){
 loadAmasaAbout();
 
 async function loadAmasaHero(){
-  if(!amasaDb)return;
-  const {data,error}=await amasaDb.from("amasa_site_content").select("title,subtitle,content,image_url,button_text,button_url").eq("section_slug","hero").eq("is_active",true).maybeSingle();
-  if(error||!data)return;
-  const title=getElement("[data-amasa-hero-title]");
-  const subtitle=getElement("[data-amasa-hero-subtitle]");
-  const body=getElement("[data-amasa-hero-content]");
-  const button=getElement("[data-amasa-hero-button]");
-  const image=getElement("[data-amasa-hero-image]");
-  if(subtitle&&data.subtitle)subtitle.textContent=data.subtitle;
-  if(title&&data.title){
-    const parts=data.title.split(" Untuk ");
-    title.innerHTML=parts.length===2?escapeHTML(parts[0])+" <span>Untuk "+escapeHTML(parts[1])+"</span>":escapeHTML(data.title);
+  const applyHero=(data)=>{
+    if(!data)return;
+    const title=getElement("[data-amasa-hero-title]");
+    const subtitle=getElement("[data-amasa-hero-subtitle]");
+    const body=getElement("[data-amasa-hero-content]");
+    const button=getElement("[data-amasa-hero-button]");
+    const image=getElement("[data-amasa-hero-image]");
+    if(subtitle&&data.subtitle)subtitle.textContent=data.subtitle;
+    if(title&&data.title){
+      const parts=data.title.split(" Untuk ");
+      title.innerHTML=parts.length===2
+        ? escapeHTML(parts[0])+" <span>Untuk "+escapeHTML(parts[1])+"</span>"
+        : escapeHTML(data.title);
+    }
+    if(body&&data.content)body.textContent=data.content;
+    if(button){
+      if(data.button_text)button.textContent=data.button_text;
+      if(data.button_url)button.href=data.button_url;
+    }
+    if(image&&data.image_url){
+      image.innerHTML="";
+      const img=document.createElement("img");
+      img.src=data.image_url+"?v="+Date.now();
+      img.alt=data.title||"AMASA";
+      img.style.width="100%";
+      img.style.height="100%";
+      img.style.objectFit="cover";
+      image.appendChild(img);
+      image.classList.add("has-image");
+    }
+  };
+
+  try{
+    const url=AMASA_SUPABASE_URL+
+      "/rest/v1/amasa_site_content?select=title,subtitle,content,image_url,button_text,button_url"+
+      "&section_slug=eq.hero&is_active=eq.true&limit=1";
+    const response=await fetch(url,{
+      headers:{
+        apikey:AMASA_SUPABASE_KEY,
+        Authorization:"Bearer "+AMASA_SUPABASE_KEY
+      },
+      cache:"no-store"
+    });
+    if(!response.ok)throw new Error("HTTP "+response.status);
+    const rows=await response.json();
+    if(rows&&rows.length){
+      applyHero(rows[0]);
+      return;
+    }
+  }catch(e){
+    console.warn("AMASA Hero REST:",e);
   }
-  if(body&&data.content)body.textContent=data.content;
-  if(button){
-    if(data.button_text)button.textContent=data.button_text;
-    if(data.button_url)button.href=data.button_url;
-  }
-  if(image&&data.image_url){
-    image.innerHTML="";
-    const img=document.createElement("img");
-    img.src=data.image_url;
-    img.alt=data.title||"AMASA";
-    image.appendChild(img);
-    image.classList.add("has-image");
+
+  if(amasaDb){
+    try{
+      const {data,error}=await amasaDb
+        .from("amasa_site_content")
+        .select("title,subtitle,content,image_url,button_text,button_url")
+        .eq("section_slug","hero")
+        .eq("is_active",true)
+        .maybeSingle();
+      if(!error&&data)applyHero(data);
+    }catch(e){
+      console.warn("AMASA Hero Supabase:",e);
+    }
   }
 }
 loadAmasaHero();
