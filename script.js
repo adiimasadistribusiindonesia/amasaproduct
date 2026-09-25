@@ -917,7 +917,10 @@ async function loadAmasaVideo(){
     try{videoData=JSON.parse(data.content||"{}")}catch(e){return}
     const items=Array.isArray(videoData.items)?videoData.items:[];
 
-    if(!items.length)return;
+    if(!items.length){
+      grid.innerHTML="";
+      return;
+    }
 
     grid.innerHTML=items.map((item,n)=>
       '<button type="button" class="video-card" data-video-index="'+n+'">'+
