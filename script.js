@@ -13,7 +13,7 @@
 const AMASA_CONFIG = {
   whatsappNumber: "6280000000000",
   whatsappMessage:
-    "Halo AMASA, saya ingin mendapatkan informasi mengenai produk AMASA.",
+    "Halo AMASA, saya ingin bertanya mengenai produk AMASA.",
   currency: "IDR",
   companyName: "PT Adiimasa Distribusi Indonesia",
   email: ""
