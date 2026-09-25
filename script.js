@@ -841,8 +841,8 @@ async function loadAmasaGallery(){
       }
       el.addEventListener("click",()=>{
         if(!galleryModal||!galleryModalContent)return;
-        galleryModalContent.innerHTML='<div style="aspect-ratio:16/9;display:grid;place-items:center;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#e8ecef,#c4cdd3);">'+
-          (el.dataset.galleryImage?'<img src="'+escapeHTML(el.dataset.galleryImage)+'" alt="Galeri AMASA '+(n+1)+'" style="width:100%;height:100%;object-fit:cover;">':"AMASA GALLERY "+(n+1))+
+        galleryModalContent.innerHTML='<div class="gallery-modal-image-wrap">'+
+          (el.dataset.galleryImage?'<img src="'+escapeHTML(el.dataset.galleryImage)+'" alt="Galeri AMASA '+(n+1)+'" class="gallery-modal-image">':"AMASA GALLERY "+(n+1))+
           '</div><h3 style="margin-top:20px;">'+escapeHTML(item?.label||"Galeri AMASA")+'</h3>';
         openModal(galleryModal);
       });
@@ -880,8 +880,8 @@ getElements("[data-gallery]").forEach((item) => {
 
     galleryModalContent.innerHTML = `
 
-      <div style="aspect-ratio:16/9;display:grid;place-items:center;border-radius:12px;overflow:hidden;background:linear-gradient(145deg,#e8ecef,#c4cdd3);">
-        ${item.dataset.galleryImage ? `<img src="${escapeHTML(item.dataset.galleryImage)}" alt="Galeri AMASA ${escapeHTML(galleryId)}" style="width:100%;height:100%;object-fit:cover;">` : `AMASA GALLERY ${escapeHTML(galleryId)}`}
+      <div class="gallery-modal-image-wrap">
+        ${item.dataset.galleryImage ? `<img src="${escapeHTML(item.dataset.galleryImage)}" alt="Galeri AMASA ${escapeHTML(galleryId)}" class="gallery-modal-image">` : `AMASA GALLERY ${escapeHTML(galleryId)}`}
       </div>
 
       <h3 style="margin-top:20px;">
