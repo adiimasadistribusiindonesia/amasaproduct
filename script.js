@@ -283,42 +283,251 @@ loadAmasaSettings();
 
 /* =========================================================
    WEBSITE ANALYTICS
-   Menghitung pengunjung unik, sesi, dan pageview AMASA.
-   ID pengunjung disimpan di browser dan tidak memakai data pribadi.
+   Menggunakan mesin Analytics Platform yang sama dengan
+   GEPARU dan SELLERBOOKS:
+   - visitor_id unik disimpan di localStorage
+   - session_id aktif 30 menit
+   - pageview dikirim ke track_platform_analytics()
    ========================================================= */
-function getAmasaBrowserId(storage, key) {
-  try {
-    let id = storage.getItem(key);
-    if (!id) {
-      id = (window.crypto && crypto.randomUUID)
-        ? crypto.randomUUID()
-        : "amasa-" + Date.now() + "-" + Math.random().toString(36).slice(2);
-      storage.setItem(key, id);
+
+const AMASA_ANALYTICS_CLIENT = "AMASA";
+const AMASA_ANALYTICS_MODULE = "AMASA";
+
+function detectAmasaDeviceType(){
+  const ua = String(navigator.userAgent || "");
+
+  if(/Android|iPhone|iPad|iPod|Mobile/i.test(ua)){
+    return "mobile_web";
+  }
+
+  return "desktop_web";
+}
+
+function detectAmasaOperatingSystem(){
+  const ua = String(navigator.userAgent || "");
+
+  if(/Windows NT/i.test(ua)) return "Windows";
+  if(/Mac OS X/i.test(ua)) return "macOS";
+  if(/Android/i.test(ua)) return "Android";
+  if(/iPhone|iPad|iPod/i.test(ua)) return "iOS";
+  if(/Linux/i.test(ua)) return "Linux";
+
+  return "Unknown";
+}
+
+function detectAmasaBrowser(){
+  const ua = String(navigator.userAgent || "");
+
+  if(/Edg\//i.test(ua)) return "Edge";
+  if(/OPR\//i.test(ua)) return "Opera";
+  if(/SamsungBrowser/i.test(ua)) return "Samsung Internet";
+  if(/Firefox\//i.test(ua)) return "Firefox";
+  if(/CriOS\//i.test(ua)) return "Chrome iOS";
+  if(/Chrome\//i.test(ua)) return "Chrome";
+  if(/Safari\//i.test(ua) && !/Chrome|CriOS/i.test(ua)) return "Safari";
+
+  return "Unknown";
+}
+
+function getAmasaAnalyticsId(storageKey, prefix){
+  try{
+    let value = localStorage.getItem(storageKey);
+
+    if(!value){
+      value =
+        prefix +
+        "_" +
+        Date.now().toString(36) +
+        "_" +
+        Math.random().toString(36).slice(2,12);
+
+      localStorage.setItem(storageKey, value);
     }
-    return id;
-  } catch (e) {
-    return "amasa-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+
+    return value;
+
+  }catch(error){
+    return (
+      prefix +
+      "_" +
+      Date.now().toString(36) +
+      "_" +
+      Math.random().toString(36).slice(2,12)
+    );
   }
 }
 
-async function trackAmasaVisit() {
-  if (!amasaDb) return;
-  try {
-    const visitorId = getAmasaBrowserId(localStorage, "amasa_visitor_id");
-    const sessionId = getAmasaBrowserId(sessionStorage, "amasa_session_id");
-    const pagePath = window.location.pathname + window.location.hash;
+function getAmasaAnalyticsSessionId(){
+  const key = "amasa_analytics_session";
+  const timeKey = "amasa_analytics_session_time";
+  const now = Date.now();
 
-    await amasaDb.rpc("track_amasa_visit", {
-      p_visitor_id: visitorId,
-      p_session_id: sessionId,
-      p_page_path: pagePath || "/"
-    });
-  } catch (e) {
-    console.warn("AMASA Analytics:", e);
+  try{
+    let sessionId = localStorage.getItem(key);
+    const lastTime =
+      Number(localStorage.getItem(timeKey) || 0);
+
+    /*
+       Sama seperti SellerBooks:
+       sesi baru setelah 30 menit tidak aktif.
+    */
+    if(
+      !sessionId ||
+      !lastTime ||
+      (now - lastTime) > (30 * 60 * 1000)
+    ){
+      sessionId =
+        "sess_" +
+        now.toString(36) +
+        "_" +
+        Math.random().toString(36).slice(2,12);
+
+      localStorage.setItem(key, sessionId);
+    }
+
+    localStorage.setItem(timeKey, String(now));
+
+    return sessionId;
+
+  }catch(error){
+    return (
+      "sess_" +
+      now.toString(36) +
+      "_" +
+      Math.random().toString(36).slice(2,12)
+    );
   }
 }
 
-trackAmasaVisit();
+function getAmasaReferrerDomain(){
+  try{
+    if(!document.referrer){
+      return null;
+    }
+
+    return new URL(document.referrer).hostname || null;
+
+  }catch(error){
+    return null;
+  }
+}
+
+async function trackAmasaVisit(){
+
+  if(
+    typeof amasaDb === "undefined" ||
+    !amasaDb
+  ){
+    return;
+  }
+
+  const visitorId =
+    getAmasaAnalyticsId(
+      "amasa_analytics_visitor",
+      "visitor"
+    );
+
+  const sessionId =
+    getAmasaAnalyticsSessionId();
+
+  const payload = {
+    p_visitor_id: visitorId,
+    p_session_id: sessionId,
+
+    p_client_name:
+      AMASA_ANALYTICS_CLIENT,
+
+    p_module_slug:
+      AMASA_ANALYTICS_MODULE,
+
+    p_page_path:
+      location.pathname + location.hash || "/",
+
+    p_page_title:
+      document.title || "AMASA",
+
+    p_page_url:
+      location.href,
+
+    p_device_type:
+      detectAmasaDeviceType(),
+
+    p_operating_system:
+      detectAmasaOperatingSystem(),
+
+    p_browser:
+      detectAmasaBrowser(),
+
+    p_screen_width:
+      Number(window.screen?.width) || null,
+
+    p_screen_height:
+      Number(window.screen?.height) || null,
+
+    p_timezone:
+      Intl.DateTimeFormat()
+        .resolvedOptions().timeZone || null,
+
+    p_language:
+      navigator.language || null,
+
+    p_referrer:
+      document.referrer || null,
+
+    p_referrer_domain:
+      getAmasaReferrerDomain()
+  };
+
+  try{
+
+    const { error } =
+      await amasaDb.rpc(
+        "track_platform_analytics",
+        payload
+      );
+
+    if(error){
+      console.warn(
+        "AMASA Analytics gagal:",
+        error
+      );
+      return;
+    }
+
+    console.log(
+      "AMASA Analytics:",
+      visitorId,
+      sessionId
+    );
+
+  }catch(error){
+
+    /*
+       Analytics tidak boleh mengganggu
+       fungsi utama website AMASA.
+    */
+    console.warn(
+      "AMASA Analytics exception:",
+      error
+    );
+  }
+}
+
+/*
+   Jalankan satu kali setiap pembukaan/reload
+   halaman, seperti SellerBooks.
+*/
+document.addEventListener(
+  "DOMContentLoaded",
+  function(){
+    setTimeout(
+      function(){
+        trackAmasaVisit();
+      },
+      800
+    );
+  }
+);
 
 /* =========================================================
    MOBILE MENU
