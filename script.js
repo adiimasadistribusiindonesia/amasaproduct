@@ -1359,13 +1359,36 @@ async function loadAmasaVideo(){
         if(yt){
           media='<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><iframe src="https://www.youtube.com/embed/'+yt[1]+'" title="'+escapeHTML(item.title||"Video AMASA")+'" style="width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
         }else if(/\.(mp4|webm|ogg)(?:\?|#|$)/i.test(url)){
-          media='<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><video src="'+safeUrl+'" controls playsinline style="width:100%;height:100%;object-fit:contain;"></video></div>';
+          const posterUrl = item.poster_url || item.thumbnail_url || item.image_url || "";
+          const safePoster = posterUrl ? escapeHTML(String(posterUrl)) : "";
+          media='<div class="amasa-video-shell" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;contain:layout paint;">'+
+            '<video src="'+safeUrl+'" '+(safePoster ? 'poster="'+safePoster+'" ' : '')+'controls playsinline preload="auto" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;opacity:0;"></video>'+
+            '<div class="amasa-video-loading" style="position:absolute;inset:0;display:grid;place-items:center;background:#000;color:rgba(255,255,255,.75);font-size:14px;pointer-events:none;">Memuat video…</div>'+
+          '</div>';
         }else{
           media='<div style="aspect-ratio:16/9;display:grid;place-items:center;border-radius:12px;background:#0b1827;color:#fff;padding:24px;text-align:center;"><a class="button button-primary" href="'+safeUrl+'" target="_blank" rel="noopener">Buka Video</a></div>';
         }
 
         videoModalContent.innerHTML=media+
           '<h3 style="margin-top:20px;">'+escapeHTML(item.title||"Video AMASA")+'</h3>';
+
+        const amasaVideo = videoModalContent.querySelector(".amasa-video-shell video");
+        const amasaVideoLoading = videoModalContent.querySelector(".amasa-video-loading");
+
+        if (amasaVideo) {
+          const revealAmasaVideo = () => {
+            amasaVideo.style.opacity = "1";
+            if (amasaVideoLoading) amasaVideoLoading.style.display = "none";
+          };
+
+          if (amasaVideo.readyState >= 2) {
+            revealAmasaVideo();
+          } else {
+            amasaVideo.addEventListener("loadeddata", revealAmasaVideo, { once: true });
+            amasaVideo.addEventListener("canplay", revealAmasaVideo, { once: true });
+          }
+        }
+
         openModal(videoModal);
       });
     });
