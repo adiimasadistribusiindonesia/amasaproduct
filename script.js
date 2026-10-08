@@ -1362,7 +1362,12 @@ async function loadAmasaVideo(){
           const posterUrl = item.poster_url || item.thumbnail_url || item.image_url || "";
           const safePoster = posterUrl ? escapeHTML(String(posterUrl)) : "";
           media='<div class="amasa-video-shell" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;contain:layout paint;">'+
-            '<video src="'+safeUrl+'" '+(safePoster ? 'poster="'+safePoster+'" ' : '')+'controls playsinline preload="auto" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;opacity:0;"></video>'+
+            '<video src="'+safeUrl+'" '+(safePoster ? 'poster="'+safePoster+'" ' : '')+'playsinline preload="auto" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;opacity:0;"></video>'+
+            '<button type="button" class="amasa-video-play" aria-label="Putar video" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border:0;border-radius:50%;background:rgba(255,255,255,.94);color:#0a1a2a;font-size:22px;display:grid;place-items:center;cursor:pointer;">▶</button>'+
+            '<div class="amasa-video-controls" style="position:absolute;left:0;right:0;bottom:0;height:46px;display:flex;align-items:center;gap:10px;padding:0 12px;background:linear-gradient(transparent,rgba(0,0,0,.82));box-sizing:border-box;">'+
+              '<button type="button" class="amasa-video-toggle" aria-label="Putar video" style="width:32px;height:32px;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:#0a1a2a;cursor:pointer;display:grid;place-items:center;">▶</button>'+
+              '<input class="amasa-video-progress" type="range" min="0" max="100" value="0" step="0.1" aria-label="Posisi video" style="flex:1;min-width:0;cursor:pointer;">'+
+            '</div>'+
             '<div class="amasa-video-loading" style="position:absolute;inset:0;display:grid;place-items:center;background:#000;color:rgba(255,255,255,.75);font-size:14px;pointer-events:none;">Memuat video…</div>'+
           '</div>';
         }else{
@@ -1374,6 +1379,9 @@ async function loadAmasaVideo(){
 
         const amasaVideo = videoModalContent.querySelector(".amasa-video-shell video");
         const amasaVideoLoading = videoModalContent.querySelector(".amasa-video-loading");
+        const amasaVideoPlay = videoModalContent.querySelector(".amasa-video-play");
+        const amasaVideoToggle = videoModalContent.querySelector(".amasa-video-toggle");
+        const amasaVideoProgress = videoModalContent.querySelector(".amasa-video-progress");
 
         if (amasaVideo) {
           const revealAmasaVideo = () => {
@@ -1381,12 +1389,44 @@ async function loadAmasaVideo(){
             if (amasaVideoLoading) amasaVideoLoading.style.display = "none";
           };
 
-          if (amasaVideo.readyState >= 2) {
-            revealAmasaVideo();
-          } else {
-            amasaVideo.addEventListener("loadeddata", revealAmasaVideo, { once: true });
-            amasaVideo.addEventListener("canplay", revealAmasaVideo, { once: true });
+          const syncAmasaVideoControls = () => {
+            const playing = !amasaVideo.paused && !amasaVideo.ended;
+            if (amasaVideoPlay) amasaVideoPlay.style.display = playing ? "none" : "grid";
+            if (amasaVideoToggle) amasaVideoToggle.textContent = playing ? "❚❚" : "▶";
+            if (amasaVideoProgress && Number.isFinite(amasaVideo.duration) && amasaVideo.duration > 0) {
+              amasaVideoProgress.value = String((amasaVideo.currentTime / amasaVideo.duration) * 100);
+            }
+          };
+
+          const toggleAmasaVideo = () => {
+            if (amasaVideo.paused) {
+              amasaVideo.play().catch(() => {});
+            } else {
+              amasaVideo.pause();
+            }
+          };
+
+          amasaVideo.addEventListener("loadeddata", revealAmasaVideo, { once: true });
+          amasaVideo.addEventListener("canplay", revealAmasaVideo, { once: true });
+          amasaVideo.addEventListener("play", syncAmasaVideoControls);
+          amasaVideo.addEventListener("pause", syncAmasaVideoControls);
+          amasaVideo.addEventListener("ended", syncAmasaVideoControls);
+          amasaVideo.addEventListener("timeupdate", syncAmasaVideoControls);
+          amasaVideo.addEventListener("durationchange", syncAmasaVideoControls);
+
+          if (amasaVideo.readyState >= 2) revealAmasaVideo();
+
+          if (amasaVideoPlay) amasaVideoPlay.addEventListener("click", toggleAmasaVideo);
+          if (amasaVideoToggle) amasaVideoToggle.addEventListener("click", toggleAmasaVideo);
+          if (amasaVideoProgress) {
+            amasaVideoProgress.addEventListener("input", () => {
+              if (Number.isFinite(amasaVideo.duration) && amasaVideo.duration > 0) {
+                amasaVideo.currentTime = (Number(amasaVideoProgress.value) / 100) * amasaVideo.duration;
+              }
+            });
           }
+
+          syncAmasaVideoControls();
         }
 
         openModal(videoModal);
