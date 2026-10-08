@@ -197,8 +197,10 @@ async function loadAmasaAbout(){
     if(image&&data.image_url){
       image.innerHTML="";
       const img=document.createElement("img");
-      img.src=data.image_url+"?v="+Date.now();
+      img.src=data.image_url;
       img.alt=data.title||"AMASA";
+      img.loading="lazy";
+      img.decoding="async";
       image.appendChild(img);
       image.classList.add("has-image");
     }
@@ -231,8 +233,10 @@ async function loadAmasaHero(){
     if(image&&data.image_url){
       image.innerHTML="";
       const img=document.createElement("img");
-      img.src=data.image_url+"?v="+Date.now();
+      img.src=data.image_url;
       img.alt=data.title||"AMASA";
+      img.loading="eager";
+      img.decoding="async";
       img.style.width="100%";
       img.style.height="100%";
       img.style.objectFit="cover";
@@ -1113,16 +1117,37 @@ async function loadAmasaGallery(){
       ).join("");
     }
 
-    getElements("[data-gallery]").forEach((el,n)=>{
+    const galleryItems=getElements("[data-gallery]");
+    const loadGalleryImage=(el,n)=>{
       const item=items[n];
-      if(item?.image_url){
-        el.style.backgroundImage="linear-gradient(180deg, transparent 40%, rgba(8,20,32,.78)), url('"+String(item.image_url).replace(/'/g,"\\'")+"')";
-        el.style.backgroundSize="cover";
-        el.style.backgroundPosition="center";
-        el.dataset.galleryImage=item.image_url;
-      }
+      if(!item?.image_url)return;
+      el.dataset.galleryImage=item.image_url;
+      el.style.backgroundImage="linear-gradient(180deg, transparent 40%, rgba(8,20,32,.78)), url('"+String(item.image_url).replace(/'/g,"\\'")+"')";
+      el.style.backgroundSize="cover";
+      el.style.backgroundPosition="center";
+      el.dataset.galleryLoaded="true";
+    };
+
+    if("IntersectionObserver" in window){
+      const galleryObserver=new IntersectionObserver((entries,observer)=>{
+        entries.forEach((entry)=>{
+          if(!entry.isIntersecting)return;
+          const el=entry.target;
+          const n=Number(el.dataset.gallery)-1;
+          loadGalleryImage(el,n);
+          observer.unobserve(el);
+        });
+      },{rootMargin:"300px 0px"});
+      galleryItems.forEach((el)=>galleryObserver.observe(el));
+    }else{
+      galleryItems.forEach((el,n)=>loadGalleryImage(el,n));
+    }
+
+    galleryItems.forEach((el,n)=>{
+      const item=items[n];
       el.addEventListener("click",()=>{
         if(!galleryModal||!galleryModalContent)return;
+        if(!el.dataset.galleryImage)loadGalleryImage(el,n);
         galleryModalContent.innerHTML='<div class="gallery-modal-image-wrap">'+
           (el.dataset.galleryImage?'<img src="'+escapeHTML(el.dataset.galleryImage)+'" alt="Galeri AMASA '+(n+1)+'" class="gallery-modal-image">':"AMASA GALLERY "+(n+1))+
           '</div><h3 style="margin-top:20px;">'+escapeHTML(item?.label||"Galeri AMASA")+'</h3>';
