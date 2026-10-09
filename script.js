@@ -1392,7 +1392,7 @@ async function loadAmasaVideo(){
           const posterUrl = item.poster_url || item.thumbnail_url || item.image_url || "";
           const safePoster = posterUrl ? escapeHTML(String(posterUrl)) : "";
           media='<div class="amasa-video-shell" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;contain:layout paint;">'+
-            '<video '+(safePoster ? 'poster="'+safePoster+'" ' : '')+'playsinline preload="none" data-amasa-video-src="'+safeUrl+'" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;opacity:0;"></video>'+
+            '<video '+(safePoster ? 'poster="'+safePoster+'" ' : '')+'src="'+safeUrl+'" playsinline preload="auto" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;opacity:1;"></video>'+
             '<button type="button" class="amasa-video-play" aria-label="Putar video" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border:0;border-radius:50%;background:rgba(255,255,255,.94);color:#0a1a2a;font-size:22px;display:grid;place-items:center;cursor:pointer;">▶</button>'+
             '<div class="amasa-video-controls" style="position:absolute;left:0;right:0;bottom:0;height:46px;display:flex;align-items:center;gap:10px;padding:0 12px;background:linear-gradient(transparent,rgba(0,0,0,.82));box-sizing:border-box;">'+
               '<button type="button" class="amasa-video-toggle" aria-label="Putar video" style="width:32px;height:32px;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:#0a1a2a;cursor:pointer;display:grid;place-items:center;">▶</button>'+
@@ -1429,15 +1429,12 @@ async function loadAmasaVideo(){
           };
 
           const startAmasaVideo = () => {
-            if (!amasaVideo.getAttribute("src")) {
-              const deferredSrc = amasaVideo.getAttribute("data-amasa-video-src");
-              if (deferredSrc) {
-                amasaVideo.setAttribute("src", deferredSrc);
-                amasaVideo.load();
+            amasaVideo.play().catch(() => {
+              if (amasaVideoLoading && !amasaVideo.error) {
+                amasaVideoLoading.style.display = "grid";
+                amasaVideoLoading.textContent = "Tekan tombol putar untuk mencoba kembali.";
               }
-            }
-
-            amasaVideo.play().catch(() => {});
+            });
           };
 
           const toggleAmasaVideo = () => {
@@ -1477,8 +1474,8 @@ async function loadAmasaVideo(){
 
           if (amasaVideo.readyState >= 2) revealAmasaVideo();
 
-          // The video has no src until the user explicitly presses Play.
-          // preload="none" keeps the browser from fetching the media in advance.
+          // Load the first frame when the modal opens so it can act as the video thumbnail.
+          // Playback still starts only after the user presses the centered Play button.
           if (amasaVideoPlay) amasaVideoPlay.addEventListener("click", startAmasaVideo);
           if (amasaVideoToggle) amasaVideoToggle.addEventListener("click", toggleAmasaVideo);
           if (amasaVideoProgress) {
