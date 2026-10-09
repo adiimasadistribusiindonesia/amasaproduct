@@ -236,6 +236,7 @@ async function loadAmasaHero(){
       img.src=data.image_url;
       img.alt=data.title||"AMASA";
       img.loading="eager";
+      img.fetchPriority="high";
       img.decoding="async";
       img.style.width="100%";
       img.style.height="100%";
@@ -917,20 +918,24 @@ function closeModal(modal) {
 
   if (!modal) return;
 
-  // Stop playback when the video modal is closed,
-  // but keep the video element/resource alive for reuse.
+  // Stop media transfers when the popup closes without removing its elements.
   if (modal.id === "videoModal") {
     modal.querySelectorAll("video").forEach((video) => {
       try {
         video.pause();
         video.currentTime = 0;
+        // Keep the <video> element and deferred source, but unload the active
+        // network resource so playback/buffering does not continue in the background.
+        if (video.hasAttribute("src")) {
+          video.removeAttribute("src");
+          video.load();
+        }
       } catch (e) {}
     });
 
-    // Do not destroy the video element or clear videoModalContent here.
-    // This prevents reopening the same popup from recreating the media element.
     modal.querySelectorAll("iframe").forEach((iframe) => {
-      iframe.src = iframe.src;
+      // Navigate the existing iframe away from the external player to stop its requests.
+      iframe.setAttribute("src", "about:blank");
     });
   }
 
