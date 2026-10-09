@@ -1419,11 +1419,12 @@ async function loadAmasaVideo(){
             if (amasaVideoLoading) amasaVideoLoading.style.display = "none";
           };
 
+          let amasaVideoSeekingByUser = false;
           const syncAmasaVideoControls = () => {
             const playing = !amasaVideo.paused && !amasaVideo.ended;
             if (amasaVideoPlay) amasaVideoPlay.style.display = playing ? "none" : "grid";
             if (amasaVideoToggle) amasaVideoToggle.textContent = playing ? "❚❚" : "▶";
-            if (amasaVideoProgress && Number.isFinite(amasaVideo.duration) && amasaVideo.duration > 0) {
+            if (amasaVideoProgress && !amasaVideoSeekingByUser && Number.isFinite(amasaVideo.duration) && amasaVideo.duration > 0) {
               amasaVideoProgress.value = String((amasaVideo.currentTime / amasaVideo.duration) * 100);
             }
           };
@@ -1479,11 +1480,28 @@ async function loadAmasaVideo(){
           if (amasaVideoPlay) amasaVideoPlay.addEventListener("click", startAmasaVideo);
           if (amasaVideoToggle) amasaVideoToggle.addEventListener("click", toggleAmasaVideo);
           if (amasaVideoProgress) {
-            amasaVideoProgress.addEventListener("input", () => {
-              if (Number.isFinite(amasaVideo.duration) && amasaVideo.duration > 0) {
-                amasaVideo.currentTime = (Number(amasaVideoProgress.value) / 100) * amasaVideo.duration;
+            const seekAmasaVideo = () => {
+              if (!Number.isFinite(amasaVideo.duration) || amasaVideo.duration <= 0) return;
+              const percent = Math.max(0, Math.min(100, Number(amasaVideoProgress.value) || 0));
+              const targetTime = (percent / 100) * amasaVideo.duration;
+              if (Number.isFinite(targetTime)) {
+                try { amasaVideo.currentTime = targetTime; } catch (_) {}
               }
+            };
+            amasaVideoProgress.addEventListener("pointerdown", () => { amasaVideoSeekingByUser = true; });
+            amasaVideoProgress.addEventListener("input", seekAmasaVideo);
+            amasaVideoProgress.addEventListener("change", () => {
+              seekAmasaVideo();
+              amasaVideoSeekingByUser = false;
+              syncAmasaVideoControls();
             });
+            ["pointerup", "keyup", "blur"].forEach(eventName => {
+              amasaVideoProgress.addEventListener(eventName, () => {
+                amasaVideoSeekingByUser = false;
+                syncAmasaVideoControls();
+              });
+            });
+            amasaVideoProgress.addEventListener("click", event => event.stopPropagation());
           }
 
           syncAmasaVideoControls();
