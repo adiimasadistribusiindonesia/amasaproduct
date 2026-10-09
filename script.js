@@ -1432,20 +1432,33 @@ async function loadAmasaVideo(){
               ? hours + ":" + String(minutes).padStart(2, "0") + ":" + String(secs).padStart(2, "0")
               : minutes + ":" + String(secs).padStart(2, "0");
           };
+          const getAmasaVideoDuration = () => {
+            const duration = amasaVideo.duration;
+            if (Number.isFinite(duration) && duration > 0) return duration;
+            // Some progressive/streaming responses report Infinity while exposing a seekable range.
+            try {
+              const ranges = amasaVideo.seekable;
+              if (ranges && ranges.length > 0) {
+                const end = ranges.end(ranges.length - 1);
+                if (Number.isFinite(end) && end > 0) return end;
+              }
+            } catch (_) {}
+            return 0;
+          };
           const syncAmasaVideoControls = () => {
             const playing = !amasaVideo.paused && !amasaVideo.ended;
             if (amasaVideoPlay) amasaVideoPlay.style.display = playing ? "none" : "grid";
             if (amasaVideoToggle) amasaVideoToggle.textContent = playing ? "❚❚" : "▶";
-            const duration = amasaVideo.duration;
-            if (Number.isFinite(duration) && duration > 0) {
+            const duration = getAmasaVideoDuration();
+            if (duration > 0) {
               if (amasaVideoProgress && !amasaVideoSeekingByUser) {
-                amasaVideoProgress.value = String((amasaVideo.currentTime / duration) * 100);
+                amasaVideoProgress.value = String(Math.max(0, Math.min(100, (amasaVideo.currentTime / duration) * 100)));
               }
               if (amasaVideoRemaining) {
                 amasaVideoRemaining.textContent = "-" + formatAmasaVideoTime(Math.max(0, duration - amasaVideo.currentTime));
               }
             } else if (amasaVideoRemaining) {
-              amasaVideoRemaining.textContent = "-0:00";
+              amasaVideoRemaining.textContent = "-" + formatAmasaVideoTime(amasaVideo.currentTime);
             }
           };
 
@@ -1501,7 +1514,7 @@ async function loadAmasaVideo(){
           if (amasaVideoToggle) amasaVideoToggle.addEventListener("click", toggleAmasaVideo);
           if (amasaVideoProgress) {
             const seekAmasaVideo = () => {
-              const duration = amasaVideo.duration;
+              const duration = getAmasaVideoDuration();
               const percent = Math.max(0, Math.min(100, Number(amasaVideoProgress.value) || 0));
               if (!Number.isFinite(duration) || duration <= 0) return;
               const targetTime = (percent / 100) * duration;
