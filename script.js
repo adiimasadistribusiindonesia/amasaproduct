@@ -1448,8 +1448,27 @@ async function loadAmasaVideo(){
             }
           };
 
+          const showAmasaVideoError = () => {
+            if (amasaVideoLoading) {
+              amasaVideoLoading.style.display = "grid";
+              amasaVideoLoading.style.pointerEvents = "auto";
+              amasaVideoLoading.innerHTML =
+                '<div style="max-width:90%;padding:18px;text-align:center;line-height:1.6;">' +
+                '<strong>Video tidak dapat diputar.</strong><br>' +
+                'Format atau codec video mungkin tidak didukung browser, atau file gagal dimuat.<br>' +
+                '<a href="' + safeUrl + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;color:#fff;text-decoration:underline;">Coba buka video langsung</a>' +
+                '</div>';
+            }
+            if (amasaVideoPlay) amasaVideoPlay.style.display = "none";
+            console.warn("AMASA video playback error", {
+              code: amasaVideo.error?.code || null,
+              message: amasaVideo.error?.message || ""
+            });
+          };
+
           amasaVideo.addEventListener("loadeddata", revealAmasaVideo, { once: true });
           amasaVideo.addEventListener("canplay", revealAmasaVideo, { once: true });
+          amasaVideo.addEventListener("error", showAmasaVideoError);
           amasaVideo.addEventListener("play", syncAmasaVideoControls);
           amasaVideo.addEventListener("pause", syncAmasaVideoControls);
           amasaVideo.addEventListener("ended", syncAmasaVideoControls);
