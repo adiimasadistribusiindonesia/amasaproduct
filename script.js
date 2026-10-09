@@ -1391,7 +1391,7 @@ async function loadAmasaVideo(){
         }else if(/\.(mp4|webm|ogg)(?:\?|#|$)/i.test(url)){
           const posterUrl = item.poster_url || item.thumbnail_url || item.image_url || "";
           const safePoster = posterUrl ? escapeHTML(String(posterUrl)) : "";
-          media='<div class="amasa-video-shell" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;contain:layout paint;">'+
+          media='<div class="amasa-video-shell" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;">'+
             '<video '+(safePoster ? 'poster="'+safePoster+'" ' : '')+'src="'+safeUrl+'" playsinline preload="auto" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;opacity:1;"></video>'+
             '<button type="button" class="amasa-video-play" aria-label="Putar video" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border:0;border-radius:50%;background:rgba(255,255,255,.94);color:#0a1a2a;font-size:22px;display:grid;place-items:center;cursor:pointer;">▶</button>'+
             '<div class="amasa-video-controls" style="position:absolute;left:0;right:0;bottom:0;height:46px;display:flex;align-items:center;gap:10px;padding:0 12px;background:linear-gradient(transparent,rgba(0,0,0,.82));box-sizing:border-box;">'+
