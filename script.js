@@ -1501,15 +1501,24 @@ async function loadAmasaVideo(){
               amasaVideoSeekingByUser = false;
               syncAmasaVideoControls();
             };
-            amasaVideoProgress.addEventListener("pointerdown", () => { amasaVideoSeekingByUser = true; });
+            const seekAmasaVideoFromPointer = event => {
+              event.stopPropagation();
+              const rect = amasaVideoProgress.getBoundingClientRect();
+              if (rect.width > 0 && event.clientX !== undefined) {
+                const percent = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)) * 100;
+                amasaVideoProgress.value = String(percent);
+              }
+              seekAmasaVideo();
+            };
+            amasaVideoProgress.addEventListener("pointerdown", event => {
+              amasaVideoSeekingByUser = true;
+              seekAmasaVideoFromPointer(event);
+            });
             amasaVideoProgress.addEventListener("input", seekAmasaVideo);
             amasaVideoProgress.addEventListener("change", seekAmasaVideo);
-            amasaVideoProgress.addEventListener("click", event => {
-              event.stopPropagation();
-              seekAmasaVideo();
-            });
-            amasaVideoProgress.addEventListener("pointerup", () => {
-              seekAmasaVideo();
+            amasaVideoProgress.addEventListener("click", seekAmasaVideoFromPointer);
+            amasaVideoProgress.addEventListener("pointerup", event => {
+              seekAmasaVideoFromPointer(event);
               // Keep the selected value visible until the browser confirms the seek.
               if (!amasaVideo.seeking) finishAmasaSeek();
             });
