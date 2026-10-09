@@ -1420,11 +1420,12 @@ async function loadAmasaVideo(){
           };
 
           let amasaVideoSeekingByUser = false;
+          let amasaPendingSeekPercent = null;
           const syncAmasaVideoControls = () => {
             const playing = !amasaVideo.paused && !amasaVideo.ended;
             if (amasaVideoPlay) amasaVideoPlay.style.display = playing ? "none" : "grid";
             if (amasaVideoToggle) amasaVideoToggle.textContent = playing ? "❚❚" : "▶";
-            if (amasaVideoProgress && !amasaVideoSeekingByUser && Number.isFinite(amasaVideo.duration) && amasaVideo.duration > 0) {
+            if (amasaVideoProgress && !amasaVideoSeekingByUser && amasaPendingSeekPercent === null && Number.isFinite(amasaVideo.duration) && amasaVideo.duration > 0) {
               amasaVideoProgress.value = String((amasaVideo.currentTime / amasaVideo.duration) * 100);
             }
           };
@@ -1481,27 +1482,48 @@ async function loadAmasaVideo(){
           if (amasaVideoToggle) amasaVideoToggle.addEventListener("click", toggleAmasaVideo);
           if (amasaVideoProgress) {
             const seekAmasaVideo = () => {
-              if (!Number.isFinite(amasaVideo.duration) || amasaVideo.duration <= 0) return;
               const percent = Math.max(0, Math.min(100, Number(amasaVideoProgress.value) || 0));
-              const targetTime = (percent / 100) * amasaVideo.duration;
-              if (Number.isFinite(targetTime)) {
-                try { amasaVideo.currentTime = targetTime; } catch (_) {}
+              if (!Number.isFinite(amasaVideo.duration) || amasaVideo.duration <= 0) {
+                amasaPendingSeekPercent = percent;
+                return;
               }
+              const targetTime = (percent / 100) * amasaVideo.duration;
+              if (!Number.isFinite(targetTime)) return;
+              amasaPendingSeekPercent = percent;
+              try {
+                amasaVideo.currentTime = targetTime;
+              } catch (_) {
+                // Keep the target and retry when metadata or media data becomes available.
+              }
+            };
+            const finishAmasaSeek = () => {
+              amasaPendingSeekPercent = null;
+              amasaVideoSeekingByUser = false;
+              syncAmasaVideoControls();
             };
             amasaVideoProgress.addEventListener("pointerdown", () => { amasaVideoSeekingByUser = true; });
             amasaVideoProgress.addEventListener("input", seekAmasaVideo);
-            amasaVideoProgress.addEventListener("change", () => {
+            amasaVideoProgress.addEventListener("change", seekAmasaVideo);
+            amasaVideoProgress.addEventListener("click", event => {
+              event.stopPropagation();
               seekAmasaVideo();
-              amasaVideoSeekingByUser = false;
-              syncAmasaVideoControls();
             });
-            ["pointerup", "keyup", "blur"].forEach(eventName => {
-              amasaVideoProgress.addEventListener(eventName, () => {
-                amasaVideoSeekingByUser = false;
-                syncAmasaVideoControls();
-              });
+            amasaVideoProgress.addEventListener("pointerup", () => {
+              seekAmasaVideo();
+              // Keep the selected value visible until the browser confirms the seek.
+              if (!amasaVideo.seeking) finishAmasaSeek();
             });
-            amasaVideoProgress.addEventListener("click", event => event.stopPropagation());
+            amasaVideoProgress.addEventListener("keyup", seekAmasaVideo);
+            amasaVideo.addEventListener("loadedmetadata", () => {
+              if (amasaPendingSeekPercent !== null) seekAmasaVideo();
+            });
+            amasaVideo.addEventListener("loadeddata", () => {
+              if (amasaPendingSeekPercent !== null) seekAmasaVideo();
+            });
+            amasaVideo.addEventListener("seeked", finishAmasaSeek);
+            amasaVideo.addEventListener("canplay", () => {
+              if (amasaPendingSeekPercent !== null) seekAmasaVideo();
+            });
           }
 
           syncAmasaVideoControls();
