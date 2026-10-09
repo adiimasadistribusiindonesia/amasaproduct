@@ -1013,6 +1013,22 @@ h3 {
   width: min(900px, calc(100vw - 40px));
 }
 
+/* Keep the video decoder out of paint/3D containment layers on mobile browsers. */
+#videoModal {
+  contain: none;
+}
+
+#videoModal .modal-overlay {
+  backdrop-filter: none;
+}
+
+#videoModal .modal-box {
+  transform: translate(-50%, -50%);
+  backface-visibility: visible;
+  contain: none;
+  will-change: auto;
+}
+
 .modal-close {
   position: absolute;
   top: 10px;
@@ -2290,7 +2306,7 @@ summary:focus-visible {
   </a>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?v=20261009-video-progress-8"></script>
+  <script src="script.js?v=20261009-video-render-fix-1"></script>
 
 
 </body>
