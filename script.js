@@ -1392,14 +1392,7 @@ async function loadAmasaVideo(){
           const posterUrl = item.poster_url || item.thumbnail_url || item.image_url || "";
           const safePoster = posterUrl ? escapeHTML(String(posterUrl)) : "";
           media='<div class="amasa-video-shell" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;">'+
-            '<video '+(safePoster ? 'poster="'+safePoster+'" ' : '')+'src="'+safeUrl+'" playsinline preload="auto" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;opacity:1;"></video>'+
-            '<button type="button" class="amasa-video-play" aria-label="Putar video" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:58px;height:58px;border:0;border-radius:50%;background:rgba(255,255,255,.94);color:#0a1a2a;font-size:22px;display:grid;place-items:center;cursor:pointer;">▶</button>'+
-            '<div class="amasa-video-controls" style="position:absolute;left:0;right:0;bottom:0;height:46px;display:flex;align-items:center;gap:10px;padding:0 12px;background:linear-gradient(transparent,rgba(0,0,0,.82));box-sizing:border-box;">'+
-              '<button type="button" class="amasa-video-toggle" aria-label="Putar video" style="width:32px;height:32px;border:0;border-radius:50%;background:rgba(255,255,255,.92);color:#0a1a2a;cursor:pointer;display:grid;place-items:center;">▶</button>'+
-              '<input class="amasa-video-progress" type="range" min="0" max="100" value="0" step="0.1" aria-label="Posisi video" style="flex:1;min-width:0;cursor:pointer;">'+
-              '<span class="amasa-video-remaining" style="flex:0 0 auto;min-width:42px;text-align:right;color:#fff;font:12px/1.2 Arial,sans-serif;font-variant-numeric:tabular-nums;">-0:00</span>'+
-            '</div>'+
-            '<div class="amasa-video-loading" style="position:absolute;inset:0;display:grid;place-items:center;background:#000;color:rgba(255,255,255,.75);font-size:14px;pointer-events:none;">Memuat video…</div>'+
+            '<video controls playsinline preload="metadata" '+(safePoster ? 'poster="'+safePoster+'" ' : '')+'src="'+safeUrl+'" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;"></video>'+
           '</div>';
         }else{
           media='<div style="aspect-ratio:16/9;display:grid;place-items:center;border-radius:12px;background:#0b1827;color:#fff;padding:24px;text-align:center;"><a class="button button-primary" href="'+safeUrl+'" target="_blank" rel="noopener">Buka Video</a></div>';
@@ -1409,151 +1402,13 @@ async function loadAmasaVideo(){
           '<h3 style="margin-top:20px;">'+escapeHTML(item.title||"Video AMASA")+'</h3>';
 
         const amasaVideo = videoModalContent.querySelector(".amasa-video-shell video");
-        const amasaVideoLoading = videoModalContent.querySelector(".amasa-video-loading");
-        const amasaVideoPlay = videoModalContent.querySelector(".amasa-video-play");
-        const amasaVideoToggle = videoModalContent.querySelector(".amasa-video-toggle");
-        const amasaVideoProgress = videoModalContent.querySelector(".amasa-video-progress");
-
         if (amasaVideo) {
-          const revealAmasaVideo = () => {
-            amasaVideo.style.opacity = "1";
-            if (amasaVideoLoading) amasaVideoLoading.style.display = "none";
-          };
-
-          let amasaVideoSeekingByUser = false;
-          const amasaVideoRemaining = videoModalContent.querySelector(".amasa-video-remaining");
-          const formatAmasaVideoTime = seconds => {
-            if (!Number.isFinite(seconds) || seconds < 0) seconds = 0;
-            const whole = Math.floor(seconds);
-            const hours = Math.floor(whole / 3600);
-            const minutes = Math.floor((whole % 3600) / 60);
-            const secs = whole % 60;
-            return hours > 0
-              ? hours + ":" + String(minutes).padStart(2, "0") + ":" + String(secs).padStart(2, "0")
-              : minutes + ":" + String(secs).padStart(2, "0");
-          };
-          const getAmasaVideoDuration = () => {
-            const duration = amasaVideo.duration;
-            if (Number.isFinite(duration) && duration > 0) return duration;
-            // Some progressive/streaming responses report Infinity while exposing a seekable range.
-            try {
-              const ranges = amasaVideo.seekable;
-              if (ranges && ranges.length > 0) {
-                const end = ranges.end(ranges.length - 1);
-                if (Number.isFinite(end) && end > 0) return end;
-              }
-            } catch (_) {}
-            return 0;
-          };
-          const syncAmasaVideoControls = () => {
-            const playing = !amasaVideo.paused && !amasaVideo.ended;
-            if (amasaVideoPlay) amasaVideoPlay.style.display = playing ? "none" : "grid";
-            if (amasaVideoToggle) amasaVideoToggle.textContent = playing ? "❚❚" : "▶";
-            const duration = getAmasaVideoDuration();
-            if (duration > 0) {
-              if (amasaVideoProgress && !amasaVideoSeekingByUser) {
-                amasaVideoProgress.value = String(Math.max(0, Math.min(100, (amasaVideo.currentTime / duration) * 100)));
-              }
-              if (amasaVideoRemaining) {
-                amasaVideoRemaining.textContent = "-" + formatAmasaVideoTime(Math.max(0, duration - amasaVideo.currentTime));
-              }
-            } else if (amasaVideoRemaining) {
-              amasaVideoRemaining.textContent = "-" + formatAmasaVideoTime(amasaVideo.currentTime);
-            }
-          };
-
-          const startAmasaVideo = () => {
-            amasaVideo.play().catch(() => {
-              if (amasaVideoLoading && !amasaVideo.error) {
-                amasaVideoLoading.style.display = "grid";
-                amasaVideoLoading.textContent = "Tekan tombol putar untuk mencoba kembali.";
-              }
-            });
-          };
-
-          const toggleAmasaVideo = () => {
-            if (amasaVideo.paused) {
-              startAmasaVideo();
-            } else {
-              amasaVideo.pause();
-            }
-          };
-
-          const showAmasaVideoError = () => {
-            if (amasaVideoLoading) {
-              amasaVideoLoading.style.display = "grid";
-              amasaVideoLoading.style.pointerEvents = "auto";
-              amasaVideoLoading.innerHTML =
-                '<div style="max-width:90%;padding:18px;text-align:center;line-height:1.6;">' +
-                '<strong>Video tidak dapat diputar.</strong><br>' +
-                'Format atau codec video mungkin tidak didukung browser, atau file gagal dimuat.<br>' +
-                '<a href="' + safeUrl + '" target="_blank" rel="noopener" style="display:inline-block;margin-top:12px;color:#fff;text-decoration:underline;">Coba buka video langsung</a>' +
-                '</div>';
-            }
-            if (amasaVideoPlay) amasaVideoPlay.style.display = "none";
+          amasaVideo.addEventListener("error", () => {
             console.warn("AMASA video playback error", {
               code: amasaVideo.error?.code || null,
               message: amasaVideo.error?.message || ""
             });
-          };
-
-          amasaVideo.addEventListener("loadeddata", revealAmasaVideo, { once: true });
-          amasaVideo.addEventListener("canplay", revealAmasaVideo, { once: true });
-          amasaVideo.addEventListener("error", showAmasaVideoError);
-          amasaVideo.addEventListener("play", syncAmasaVideoControls);
-          amasaVideo.addEventListener("pause", syncAmasaVideoControls);
-          amasaVideo.addEventListener("ended", syncAmasaVideoControls);
-          amasaVideo.addEventListener("timeupdate", syncAmasaVideoControls);
-          amasaVideo.addEventListener("durationchange", syncAmasaVideoControls);
-
-          if (amasaVideo.readyState >= 2) revealAmasaVideo();
-
-          // Load the first frame when the modal opens so it can act as the video thumbnail.
-          // Playback still starts only after the user presses the centered Play button.
-          if (amasaVideoPlay) amasaVideoPlay.addEventListener("click", startAmasaVideo);
-          if (amasaVideoToggle) amasaVideoToggle.addEventListener("click", toggleAmasaVideo);
-          if (amasaVideoProgress) {
-            const seekAmasaVideo = () => {
-              const duration = getAmasaVideoDuration();
-              const percent = Math.max(0, Math.min(100, Number(amasaVideoProgress.value) || 0));
-              if (!Number.isFinite(duration) || duration <= 0) return;
-              const targetTime = (percent / 100) * duration;
-              if (!Number.isFinite(targetTime)) return;
-              try { amasaVideo.currentTime = targetTime; } catch (_) {}
-            };
-            const finishAmasaSeek = () => {
-              amasaVideoSeekingByUser = false;
-              syncAmasaVideoControls();
-            };
-            const seekAmasaVideoFromPointer = event => {
-              event.stopPropagation();
-              const rect = amasaVideoProgress.getBoundingClientRect();
-              if (rect.width > 0 && event.clientX !== undefined) {
-                const percent = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)) * 100;
-                amasaVideoProgress.value = String(percent);
-              }
-              seekAmasaVideo();
-            };
-            amasaVideoProgress.addEventListener("pointerdown", event => {
-              amasaVideoSeekingByUser = true;
-              seekAmasaVideoFromPointer(event);
-            });
-            amasaVideoProgress.addEventListener("input", seekAmasaVideo);
-            amasaVideoProgress.addEventListener("change", seekAmasaVideo);
-            amasaVideoProgress.addEventListener("click", seekAmasaVideoFromPointer);
-            amasaVideoProgress.addEventListener("pointerup", event => {
-              seekAmasaVideoFromPointer(event);
-              // Keep the selected value visible until the browser confirms the seek.
-              if (!amasaVideo.seeking) finishAmasaSeek();
-            });
-            amasaVideoProgress.addEventListener("keyup", seekAmasaVideo);
-            amasaVideo.addEventListener("loadedmetadata", syncAmasaVideoControls);
-            amasaVideo.addEventListener("loadeddata", syncAmasaVideoControls);
-            amasaVideo.addEventListener("seeked", finishAmasaSeek);
-            amasaVideo.addEventListener("canplay", syncAmasaVideoControls);
-          }
-
-          syncAmasaVideoControls();
+          });
         }
 
         openModal(videoModal);
