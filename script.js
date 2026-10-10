@@ -1167,7 +1167,7 @@ async function loadAmasaGallery(){
         if(!el.dataset.galleryImage)loadGalleryImage(el,n);
         galleryModalContent.innerHTML='<div class="gallery-modal-image-wrap">'+
           (el.dataset.galleryImage?'<img src="'+escapeHTML(el.dataset.galleryImage)+'" alt="Galeri AMASA '+(n+1)+'" class="gallery-modal-image">':"AMASA GALLERY "+(n+1))+
-          '</div><h3 style="margin-top:20px;">'+escapeHTML(item?.label||"Galeri AMASA")+'</h3>';
+          '</div><h3 style="margin-top:20px;">'+escapeHTML(data.subtitle||item?.label||"Galeri AMASA")+'</h3>';
         openModal(galleryModal);
       });
     });
