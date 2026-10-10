@@ -1084,8 +1084,8 @@ function openProductModal(productId) {
 function getGoogleDriveFileId(raw){
   try{
     const u=new URL(String(raw||""));
-    if(!/(^|\\.)drive\\.google\\.com$/i.test(u.hostname))return "";
-    return u.pathname.match(/\\/file\\/d\\/([a-zA-Z0-9_-]+)/)?.[1]||u.searchParams.get("id")||"";
+    if(!/(^|\.)drive\.google\.com$/i.test(u.hostname))return "";
+    return u.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1]||u.searchParams.get("id")||"";
   }catch(_){return ""}
 }
 function resolveGalleryImageUrl(raw){
@@ -1397,7 +1397,7 @@ async function loadAmasaVideo(){
         const safeUrl=escapeHTML(url);
         let media="";
 
-        const yt=url.match(/(?:youtube\\.com\\/(?:watch\\?v=|shorts\\/|embed\\/)|youtu\\.be\\/)([A-Za-z0-9_-]{6,})/i);
+        const yt=url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
         const driveId=getGoogleDriveFileId(url);
         if(yt){
           media='<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><iframe src="https://www.youtube.com/embed/'+yt[1]+'" title="'+escapeHTML(item.title||"Video AMASA")+'" style="width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
