@@ -1402,7 +1402,7 @@ async function loadAmasaVideo(){
         if(yt){
           media='<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><iframe src="https://www.youtube.com/embed/'+yt[1]+'" title="'+escapeHTML(item.title||"Video AMASA")+'" style="width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
         }else if(driveId){
-          media='<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><iframe src="https://drive.google.com/file/d/'+encodeURIComponent(driveId)+'/preview" title="'+escapeHTML(item.title||"Video AMASA")+'" style="width:100%;height:100%;border:0;" allow="autoplay" allowfullscreen></iframe></div><p style="margin-top:10px;"><a href="'+safeUrl+'" target="_blank" rel="noopener noreferrer">Buka video di Google Drive</a></p>';
+          media='<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><iframe src="https://drive.google.com/file/d/'+encodeURIComponent(driveId)+'/preview" title="'+escapeHTML(item.title||"Video AMASA")+'" style="width:100%;height:100%;border:0;" allow="autoplay" allowfullscreen></iframe></div>';
         }else if(/\.(mp4|webm|ogg)(?:\?|#|$)/i.test(url)){
           const posterUrl = item.poster_url || item.thumbnail_url || item.image_url || "";
           const safePoster = posterUrl ? escapeHTML(String(posterUrl)) : "";
