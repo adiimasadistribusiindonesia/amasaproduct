@@ -1081,6 +1081,17 @@ function openProductModal(productId) {
 }
 
 
+function getGoogleDriveFileId(raw){
+  try{
+    const u=new URL(String(raw||""));
+    if(!/(^|\\.)drive\\.google\\.com$/i.test(u.hostname))return "";
+    return u.pathname.match(/\\/file\\/d\\/([a-zA-Z0-9_-]+)/)?.[1]||u.searchParams.get("id")||"";
+  }catch(_){return ""}
+}
+function resolveGalleryImageUrl(raw){
+  const id=getGoogleDriveFileId(raw);
+  return id?"https://drive.google.com/thumbnail?id="+encodeURIComponent(id)+"&sz=w1600":String(raw||"");
+}
 async function loadAmasaGallery(){
   try{
     const url=AMASA_SUPABASE_URL+
@@ -1126,8 +1137,9 @@ async function loadAmasaGallery(){
     const loadGalleryImage=(el,n)=>{
       const item=items[n];
       if(!item?.image_url)return;
-      el.dataset.galleryImage=item.image_url;
-      el.style.backgroundImage="linear-gradient(180deg, transparent 40%, rgba(8,20,32,.78)), url('"+String(item.image_url).replace(/'/g,"\\'")+"')";
+      const displayUrl=resolveGalleryImageUrl(item.image_url);
+      el.dataset.galleryImage=displayUrl;
+      el.style.backgroundImage="linear-gradient(180deg, transparent 40%, rgba(8,20,32,.78)), url('"+String(displayUrl).replace(/'/g,"\\'")+"')";
       el.style.backgroundSize="cover";
       el.style.backgroundPosition="center";
       el.dataset.galleryLoaded="true";
@@ -1385,9 +1397,12 @@ async function loadAmasaVideo(){
         const safeUrl=escapeHTML(url);
         let media="";
 
-        const yt=url.match(/(?:youtube\.com\/(?:watch\?v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+        const yt=url.match(/(?:youtube\\.com\\/(?:watch\\?v=|shorts\\/|embed\\/)|youtu\\.be\\/)([A-Za-z0-9_-]{6,})/i);
+        const driveId=getGoogleDriveFileId(url);
         if(yt){
           media='<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><iframe src="https://www.youtube.com/embed/'+yt[1]+'" title="'+escapeHTML(item.title||"Video AMASA")+'" style="width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
+        }else if(driveId){
+          media='<div style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><iframe src="https://drive.google.com/file/d/'+encodeURIComponent(driveId)+'/preview" title="'+escapeHTML(item.title||"Video AMASA")+'" style="width:100%;height:100%;border:0;" allow="autoplay" allowfullscreen></iframe></div><p style="margin-top:10px;"><a href="'+safeUrl+'" target="_blank" rel="noopener noreferrer">Buka video di Google Drive</a></p>';
         }else if(/\.(mp4|webm|ogg)(?:\?|#|$)/i.test(url)){
           const posterUrl = item.poster_url || item.thumbnail_url || item.image_url || "";
           const safePoster = posterUrl ? escapeHTML(String(posterUrl)) : "";
