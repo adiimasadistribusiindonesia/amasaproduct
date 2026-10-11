@@ -257,7 +257,7 @@ async function loadVisitorAnalytics(){
 
     const hasData=totals.pageviews>0;
     if(empty){
-      empty.hidden=false;
+      empty.hidden=hasData;
       empty.textContent=hasData
         ? "Grafik menampilkan pengunjung unik per hari. Total 7 hari: "+totals.visitors.toLocaleString("id-ID")+" pengunjung unik, "+totals.pageviews.toLocaleString("id-ID")+" pageview, dan "+totals.sessions.toLocaleString("id-ID")+" sesi."
         : "Belum ada kunjungan AMASA yang tercatat dalam 7 hari terakhir.";
