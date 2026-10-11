@@ -1455,7 +1455,16 @@ async function loadAmasaVideo(){
         if(yt){
           media='<div class="amasa-video-frame" style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><iframe src="https://www.youtube.com/embed/'+yt[1]+'" title="'+escapeHTML(item.title||"Video AMASA")+'" style="width:100%;height:100%;border:0;" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe></div>';
         }else if(driveId){
-          media='<div class="amasa-video-frame" style="aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;"><iframe src="https://drive.google.com/file/d/'+encodeURIComponent(driveId)+'/preview" title="'+escapeHTML(item.title||"Video AMASA")+'" style="width:100%;height:100%;border:0;" allow="autoplay" allowfullscreen></iframe></div>';
+          // Do not embed the Google Drive preview iframe: its player controls are
+          // cross-origin and cannot be styled/removed by AMASA. Play the media
+          // through a video element so mobile can use the single centered button.
+          const driveVideoUrl="https://drive.usercontent.google.com/download?id="+encodeURIComponent(driveId)+"&export=download";
+          const safeDriveVideoUrl=escapeHTML(driveVideoUrl);
+          const posterUrl=item.poster_url||item.thumbnail_url||item.image_url||"";
+          const safePoster=posterUrl?escapeHTML(String(posterUrl)):"";
+          media='<div class="amasa-video-shell amasa-video-frame" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;">'+
+            '<video controls playsinline preload="metadata" class="amasa-video-player" '+(safePoster?'poster="'+safePoster+'" ':'')+'src="'+safeDriveVideoUrl+'" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;"></video>'+
+          '</div>';
         }else if(/\.(mp4|webm|ogg)(?:\?|#|$)/i.test(url)){
           const posterUrl = item.poster_url || item.thumbnail_url || item.image_url || "";
           const safePoster = posterUrl ? escapeHTML(String(posterUrl)) : "";
