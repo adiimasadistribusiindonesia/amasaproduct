@@ -1594,7 +1594,7 @@ async function loadAmasaVideo(){
                 showControls();
                 if (!amasaVideo.paused && !amasaVideo.ended) scheduleHideControls();
               });
-              controls.addEventListener("click", showControls);
+              controls.addEventListener("click", () => { showControls(); if (!amasaVideo.paused && !amasaVideo.ended) scheduleHideControls(); });
               seek.addEventListener("pointerdown", showControls);
               seek.addEventListener("pointerup", scheduleHideControls);
               ["play", "playing"].forEach((eventName) => {
