@@ -1460,7 +1460,7 @@ async function loadAmasaVideo(){
           const posterUrl = item.poster_url || item.thumbnail_url || item.image_url || "";
           const safePoster = posterUrl ? escapeHTML(String(posterUrl)) : "";
           media='<div class="amasa-video-shell amasa-video-frame" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;">'+
-            '<video controls playsinline preload="metadata" '+(safePoster ? 'poster="'+safePoster+'" ' : '')+'src="'+safeUrl+'" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;"></video>'+
+            '<video controls playsinline preload="metadata" class="amasa-video-player" '+(safePoster ? 'poster="'+safePoster+'" ' : '')+'src="'+safeUrl+'" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;"></video>'+
           '</div>';
         }else{
           media='<div style="aspect-ratio:16/9;display:grid;place-items:center;border-radius:12px;background:#0b1827;color:#fff;padding:24px;text-align:center;"><a class="button button-primary" href="'+safeUrl+'" target="_blank" rel="noopener">Buka Video</a></div>';
@@ -1477,6 +1477,60 @@ async function loadAmasaVideo(){
               message: amasaVideo.error?.message || ""
             });
           });
+
+          // Android Chrome renders an extra overlay timeline on top of its
+          // native controls. Replace native controls on mobile with one clean
+          // custom control row so only a single seek bar remains visible.
+          if (window.matchMedia && window.matchMedia("(max-width: 760px)").matches) {
+            amasaVideo.removeAttribute("controls");
+            const shell = amasaVideo.closest(".amasa-video-shell");
+            if (shell) {
+              const controls = document.createElement("div");
+              controls.className = "amasa-custom-controls";
+              controls.innerHTML =
+                '<button type="button" class="amasa-custom-play" aria-label="Putar video">▶</button>' +
+                '<input class="amasa-custom-seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Posisi video">' +
+                '<span class="amasa-custom-time">0:00 / 0:00</span>';
+              shell.appendChild(controls);
+
+              const playButton = controls.querySelector(".amasa-custom-play");
+              const seek = controls.querySelector(".amasa-custom-seek");
+              const time = controls.querySelector(".amasa-custom-time");
+              const formatTime = (seconds) => {
+                if (!Number.isFinite(seconds) || seconds < 0) seconds = 0;
+                const mins = Math.floor(seconds / 60);
+                const secs = Math.floor(seconds % 60);
+                return mins + ":" + String(secs).padStart(2, "0");
+              };
+              const updateControls = () => {
+                const duration = Number.isFinite(amasaVideo.duration) ? amasaVideo.duration : 0;
+                time.textContent = formatTime(amasaVideo.currentTime) + " / " + formatTime(duration);
+                seek.value = duration ? String(Math.round(amasaVideo.currentTime / duration * 1000)) : "0";
+                playButton.textContent = amasaVideo.paused ? "▶" : "Ⅱ";
+                playButton.setAttribute("aria-label", amasaVideo.paused ? "Putar video" : "Jeda video");
+              };
+              playButton.addEventListener("click", () => {
+                if (amasaVideo.paused) {
+                  const result = amasaVideo.play();
+                  if (result && typeof result.catch === "function") result.catch(() => {});
+                } else {
+                  amasaVideo.pause();
+                }
+                updateControls();
+              });
+              seek.addEventListener("input", () => {
+                const duration = Number.isFinite(amasaVideo.duration) ? amasaVideo.duration : 0;
+                if (duration) {
+                  amasaVideo.currentTime = Number(seek.value) / 1000 * duration;
+                  updateControls();
+                }
+              });
+              ["loadedmetadata", "durationchange", "timeupdate", "play", "pause", "ended", "seeked"].forEach((eventName) => {
+                amasaVideo.addEventListener(eventName, updateControls);
+              });
+              updateControls();
+            }
+          }
         }
 
         openModal(videoModal);
