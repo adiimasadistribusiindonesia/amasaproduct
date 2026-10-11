@@ -110,5 +110,10 @@ button{cursor:pointer}
   .sidebar-copyright{font-size:9px;padding:12px 10px 0}
 }
 
-/* Keep the mobile analytics card compact when there is no visitor data */
-.analytics-panel.analytics-panel--empty .visitor-chart-wrap{display:none}
+/* Make visitor analytics chart clear and compact when there is no data */
+.visitor-chart-heading{display:flex;flex-direction:column;gap:4px;margin:20px 0 4px}
+.visitor-chart-heading strong{font-size:14px;color:var(--text)}
+.visitor-chart-heading span{font-size:12px;line-height:1.5;color:var(--muted)}
+.analytics-panel.analytics-panel--empty .visitor-chart-wrap{min-height:0}
+.analytics-panel.analytics-panel--empty .visitor-chart{display:none}
+.analytics-panel.analytics-panel--empty .analytics-empty{position:static;display:block;padding:12px 0 2px;text-align:left;line-height:1.5;font-size:12px;font-weight:500}
