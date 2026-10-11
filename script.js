@@ -828,7 +828,8 @@ function renderMarketplaceButtons(links = {}) {
     ["tokopedia", "Tokopedia"],
     ["lazada", "Lazada"],
     ["toco", "Toco"],
-    ["blibli", "Blibli"]
+    ["blibli", "Blibli"],
+    ["website", "Website"]
   ];
 
   const buttons = marketplaces
