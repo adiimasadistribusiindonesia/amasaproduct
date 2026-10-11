@@ -1068,23 +1068,64 @@ h3 {
     object-fit: contain;
   }
 
-  /* Hide the duplicate floating/overlay timeline in Android Chrome.
-     Keep the regular bottom controls and their seek bar visible. */
-  #videoModalContent .amasa-video-frame video::-webkit-media-controls-overlay-enclosure {
-    display: none !important;
+  /* Mobile uses our own single-row controls; native Chrome controls
+     are disabled on this viewport so duplicate overlay timelines cannot appear. */
+  #videoModalContent .amasa-video-frame.amasa-video-shell {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 0;
   }
 
-  #videoModalContent .amasa-video-frame video::-webkit-media-controls-overlay-play-button {
-    display: none !important;
-  }
-
-  /* Keep Android Chrome's native control panel aligned to the video width. */
-  #videoModalContent .amasa-video-frame video::-webkit-media-controls-panel {
-    width: 100%;
-  }
-
-  #videoModalContent .amasa-video-frame video::-webkit-media-controls-enclosure {
+  #videoModalContent .amasa-video-shell > video {
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100% !important;
+    height: calc(100% - 54px) !important;
     max-width: 100%;
+    max-height: calc(100% - 54px);
+    object-fit: contain;
+  }
+
+  #videoModalContent .amasa-custom-controls {
+    flex: 0 0 54px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+    width: 100%;
+    padding: 0 10px;
+    color: #fff;
+    background: #101820;
+  }
+
+  #videoModalContent .amasa-custom-play {
+    flex: 0 0 38px;
+    width: 38px;
+    height: 38px;
+    border: 0;
+    border-radius: 50%;
+    color: #101820;
+    background: #fff;
+    font-size: 17px;
+    line-height: 1;
+  }
+
+  #videoModalContent .amasa-custom-seek {
+    flex: 1 1 auto;
+    min-width: 40px;
+    width: 100%;
+    margin: 0;
+    accent-color: #fff;
+  }
+
+  #videoModalContent .amasa-custom-time {
+    flex: 0 0 auto;
+    color: #fff;
+    font-size: 12px;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
 
   #videoModalContent h3 {
@@ -2398,7 +2439,7 @@ summary:focus-visible {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?v=20261011-hide-duplicate-video-timeline-3"></script>
+  <script src="script.js?v=20261011-custom-mobile-video-controls-4"></script>
 
 
 </body>
