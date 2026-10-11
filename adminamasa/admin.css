@@ -147,3 +147,22 @@ button{cursor:pointer}
 }
 .analytics-panel.analytics-panel--empty .visitor-chart-wrap{height:auto;min-height:0}
 .analytics-panel.analytics-panel--empty .visitor-chart{display:block}
+
+/* Hard override: prevent the chart frame from stretching to fill the tall panel */
+.analytics-panel .visitor-chart-wrap{
+  display:block;
+  box-sizing:border-box;
+  width:100%;
+  height:auto !important;
+  min-height:0 !important;
+  max-height:none;
+  align-self:start;
+  flex:0 0 auto;
+}
+.analytics-panel .visitor-chart-wrap > svg.visitor-chart{
+  display:block;
+  width:100%;
+  height:auto !important;
+  max-height:220px;
+  aspect-ratio:900 / 280;
+}
