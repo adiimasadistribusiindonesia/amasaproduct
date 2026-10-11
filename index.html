@@ -1061,11 +1061,20 @@ h3 {
 
   #videoModalContent .amasa-video-frame video {
     display: block;
-    width: auto !important;
-    height: auto !important;
+    width: 100% !important;
+    height: 100% !important;
     max-width: 100%;
     max-height: 100%;
     object-fit: contain;
+  }
+
+  /* Keep Android Chrome's native control panel aligned to the video width. */
+  #videoModalContent .amasa-video-frame video::-webkit-media-controls-panel {
+    width: 100%;
+  }
+
+  #videoModalContent .amasa-video-frame video::-webkit-media-controls-enclosure {
+    max-width: 100%;
   }
 
   #videoModalContent h3 {
@@ -2379,7 +2388,7 @@ summary:focus-visible {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?v=20261011-mobile-video-modal-1"></script>
+  <script src="script.js?v=20261011-mobile-video-controls-2"></script>
 
 
 </body>
