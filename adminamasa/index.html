@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>AMASA Admin — Dashboard</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <div class="brand-name">AMASA</div>
+        <div class="brand-sub">ADMIN PANEL</div>
+      </div>
+
+      <nav class="side-nav">
+        <button class="nav-item active" data-page="dashboard">Dashboard</button>
+        <button class="nav-item" data-page="products">Produk</button>
+        <button class="nav-item" data-page="categories">Kategori</button>
+        <button class="nav-item" data-page="content">Konten Website</button>
+        <button class="nav-item" data-page="settings">Pengaturan</button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button class="nav-item danger" id="logoutButton">Keluar</button>
+        <div class="sidebar-copyright">© 2026 AMASA - PT Adiimasa Distribusi Indonesia, All rights reserved.</div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu">☰</button>
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+        </div>
+      </header>
+
+      <section class="page active" id="page-dashboard">
+        <div class="welcome-card">
+          <div>
+            <span class="eyebrow">AMASA WEBSITE</span>
+            <h2>Pusat Pengelolaan Website</h2>
+            <p>Kelola produk, kategori, dan konten website dari satu tempat.</p>
+          </div>
+          <button class="primary" data-go="products">Kelola Produk</button>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card"><span>Total Produk</span><strong id="statProducts">—</strong></div>
+          <div class="stat-card"><span>Kategori</span><strong id="statCategories">—</strong></div>
+          <div class="stat-card"><span>Produk Aktif</span><strong id="statActive">—</strong></div>
+          <div class="stat-card"><span>Status Sistem</span><strong id="statSystem">—</strong></div>
+        </div>
+
+        <div class="panel analytics-panel">
+          <div class="panel-head">
+            <div>
+              <span class="eyebrow">WEBSITE ANALYTICS</span>
+              <h3>Pengunjung Website</h3>
+              <p>Ringkasan pengunjung dan pageview AMASA dalam 7 hari terakhir.</p>
+            </div>
+            <span class="analytics-period">7 Hari</span>
+          </div>
+          <div class="analytics-summary">
+            <div><span>Pengunjung Unik</span><strong id="analyticsVisitors">0</strong></div>
+            <div><span>Pageview</span><strong id="analyticsPageviews">0</strong></div>
+            <div><span>Sesi</span><strong id="analyticsSessions">0</strong></div>
+          </div>
+          <div class="visitor-chart-wrap">
+            <svg id="visitorChart" class="visitor-chart" viewBox="0 0 900 280" role="img" aria-label="Grafik pengunjung website"></svg>
+            <div id="visitorEmpty" class="analytics-empty" hidden>Belum ada data pengunjung AMASA.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-products">
+        <div class="page-head">
+          <div><span class="eyebrow">CATALOG</span><h2>Produk</h2><p>Tambah, edit, aktifkan, atau nonaktifkan produk AMASA.</p></div>
+          <button class="primary" id="addProductButton">+ Tambah Produk</button>
+        </div>
+        <div class="toolbar">
+          <input id="productSearch" type="search" placeholder="Cari nama produk...">
+          <select id="productCategoryFilter"><option value="">Semua kategori</option></select>
+        </div>
+        <div class="panel table-wrap">
+          <table><thead><tr><th>Produk</th><th>Kategori</th><th>Harga</th><th>Status</th><th>Unggulan</th><th>Aksi</th></tr></thead>
+          <tbody id="productsTableBody"><tr><td colspan="6" class="empty">Memuat produk...</td></tr></tbody></table>
+        </div>
+      </section>
+
+      <section class="page" id="page-categories">
+        <div class="page-head">
+          <div><span class="eyebrow">CATALOG</span><h2>Kategori</h2><p>Kelola kategori yang digunakan pada katalog produk.</p></div>
+          <button class="primary" id="addCategoryButton">+ Tambah Kategori</button>
+        </div>
+        <div class="panel">
+          <div id="categoriesList" class="category-list"><div class="empty">Memuat kategori...</div></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-content">
+        <div class="page-head">
+          <div><span class="eyebrow">CONTENT</span><h2>Konten Website</h2><p>Kelola konten utama yang tampil pada website AMASA.</p></div>
+        </div>
+        <div class="content-grid" id="contentGrid">
+          <div class="content-card"><strong>Memuat...</strong><span>Konten Website</span></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-settings">
+        <div class="page-head"><div><span class="eyebrow">SYSTEM</span><h2>Pengaturan</h2><p>Kelola identitas dan kontak website AMASA.</p></div></div>
+        <div class="panel settings-panel">
+          <label>Nama Brand<input value="AMASA" id="settingBrand"></label>
+          <label>Nama Perusahaan<input value="PT Adiimasa Distribusi Indonesia" id="settingCompany"></label>
+          <label>Nomor WhatsApp<input placeholder="628xxxxxxxxxx" id="settingWhatsapp"></label>
+          <label>Email<input placeholder="email@domain.com" id="settingEmail"></label>
+          <button class="primary" id="saveSettings">Simpan Pengaturan</button>
+          
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="modal" id="productModal" hidden>
+    <div class="modal-backdrop" data-close></div>
+    <div class="modal-box">
+      <button class="modal-close" data-close>×</button>
+      <div class="modal-head"><span class="eyebrow">PRODUCT</span><h2 id="modalTitle">Tambah Produk</h2></div>
+      <form id="productForm">
+        <input type="hidden" id="productId">
+        <div class="form-grid">
+          <label>Nama Produk*<input id="productName" required></label>
+          <label>Slug*<input id="productSlug" required placeholder="contoh-nama-produk"></label>
+          <label>Kategori<select id="productCategory"></select></label>
+          <label>Harga<input id="productPrice" type="number" min="0" step="1" placeholder="17000"></label>
+          <label class="full">Gambar Produk<input id="productImage" type="file" accept="image/*"><small id="productImageInfo" class="muted">JPG, PNG, WEBP. Maksimal 5 MB sebelum kompresi otomatis ke WebP.</small><img id="productImagePreview" class="product-image-preview" alt="Preview gambar produk" hidden></label>
+          <div class="full marketplace-links-admin">
+            <strong>Link Marketplace</strong>
+            <p class="muted">Isi hanya marketplace yang memiliki link pembelian untuk produk ini.</p>
+            <div class="form-grid">
+              <label>Shopee<input id="marketShopee" type="url" placeholder="https://shopee.co.id/..."></label>
+              <label>TikTok Shop<input id="marketTiktok" type="url" placeholder="https://www.tiktok.com/..."></label>
+              <label>Tokopedia<input id="marketTokopedia" type="url" placeholder="https://www.tokopedia.com/..."></label>
+              <label>Lazada<input id="marketLazada" type="url" placeholder="https://www.lazada.co.id/..."></label>
+              <label>Toco<input id="marketToco" type="url" placeholder="https://toco.id/..."></label>
+              <label>Blibli<input id="marketBlibli" type="url" placeholder="https://www.blibli.com/..."></label>
+            </div>
+          </div>
+          <label>Ukuran<input id="productSize" placeholder="100 ml"></label>
+          <label>Badge<input id="productBadge" placeholder="HOME CARE"></label>
+          <label class="full">Deskripsi Singkat<textarea id="productShort" rows="3"></textarea></label>
+          <label class="full">Deskripsi Lengkap<textarea id="productDescription" rows="5"></textarea></label>
+          <label class="full">Cara Penggunaan<textarea id="productUsage" rows="4"></textarea></label>
+          <label class="full">Informasi Keamanan<textarea id="productSafety" rows="4"></textarea></label>
+          <label>Urutan<input id="productOrder" type="number" value="0"></label>
+          <label class="check-row"><input id="productFeatured" type="checkbox"> Produk unggulan</label>
+          <label class="check-row"><input id="productActive" type="checkbox" checked> Produk aktif</label>
+        </div>
+        <div class="form-actions"><button type="button" class="secondary" data-close>Batal</button><button type="submit" class="primary" id="saveProduct">Simpan Produk</button></div>
+      </form>
+    </div>
+  </div>
+
+
+  <div class="modal" id="categoryModal" hidden>
+    <div class="modal-backdrop" data-category-close></div>
+    <div class="modal-box">
+      <button class="modal-close" data-category-close>×</button>
+      <div class="modal-head"><span class="eyebrow">CATEGORY</span><h2 id="categoryModalTitle">Tambah Kategori</h2></div>
+      <form id="categoryForm">
+        <input type="hidden" id="categoryId">
+        <div class="form-grid">
+          <label>Nama Kategori*<input id="categoryName" required></label>
+          <label>Slug*<input id="categorySlug" required placeholder="contoh-kategori"></label>
+          <label class="full">Deskripsi<textarea id="categoryDescription" rows="4"></textarea></label>
+          <label>Urutan<input id="categoryOrder" type="number" value="0"></label>
+          <label class="check-row"><input id="categoryActive" type="checkbox" checked> Kategori aktif</label>
+        </div>
+        <div class="form-actions"><button type="button" class="secondary" data-category-close>Batal</button><button type="submit" class="primary" id="saveCategory">Simpan Kategori</button></div>
+      </form>
+    </div>
+  </div>
+
+
+  <div class="modal" id="contentModal" hidden>
+    <div class="modal-backdrop" data-content-close></div>
+    <div class="modal-box">
+      <button class="modal-close" data-content-close>×</button>
+      <div class="modal-head"><span class="eyebrow">WEBSITE CONTENT</span><h2 id="contentModalTitle">Edit Konten</h2></div>
+      <form id="contentForm">
+        <input type="hidden" id="contentId">
+        <div class="form-grid">
+          <label>Nama Bagian<input id="contentSectionName" readonly></label>
+          <label>Judul<input id="contentTitle"></label>
+          <label class="full">Subjudul / Label<input id="contentSubtitle"></label>
+          <label class="full" id="contentBodyWrap">Isi Konten<textarea id="contentBody" rows="7"></textarea></label>
+          <label class="full" id="aboutParagraph1Wrap" hidden>Paragraf 1<textarea id="aboutParagraph1" rows="5"></textarea></label>
+          <label class="full" id="aboutParagraph2Wrap" hidden>Paragraf 2<textarea id="aboutParagraph2" rows="5"></textarea></label>
+          <label id="contentImageWrap">Gambar<input id="contentImage" type="file" accept="image/jpeg,image/png,image/webp"><small id="contentImageInfo" class="muted">JPG, PNG, WEBP. Maksimal 5 MB.</small><img id="contentImagePreview" class="product-image-preview" alt="Preview gambar" hidden><button type="button" class="small-btn delete" id="clearContentImage" hidden>Hapus Gambar</button></label>
+          <div class="full" id="galleryImagesWrap" hidden><strong>Foto Galeri</strong><p class="muted">Tempel link berbagi foto dari Google Drive. Pastikan akses file di Google Drive diatur ke "Siapa saja yang memiliki link".</p><div id="galleryAdminList" class="gallery-admin-list"></div><button type="button" class="secondary" id="addGalleryImage">+ Tambah Link Foto</button></div><div class="full" id="videoItemsWrap" hidden><strong>Video Produk</strong><p class="muted">Tempel link berbagi Google Drive atau link YouTube. Pastikan video Google Drive dapat dilihat oleh pengunjung website.</p><div id="videoAdminList" class="gallery-admin-list"></div><button type="button" class="secondary" id="addVideoItem">+ Tambah Link Video</button></div><div class="full" id="mediaLinkGuide" style="margin-top:18px;padding:16px;border:1px solid #d7e3e8;border-radius:12px;background:#f8fbfc;"><strong style="display:block;font-size:16px;margin-bottom:10px;">Panduan Upload Galeri Foto</strong><p class="muted" style="margin:0 0 12px;">Foto disimpan di Google Drive. Admin AMASA hanya menyimpan tautan foto, bukan file gambarnya.</p><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;min-width:520px;background:#fff;"><thead><tr style="background:#eaf3f5;"><th style="padding:10px;border:1px solid #d7e3e8;text-align:left;">Langkah</th><th style="padding:10px;border:1px solid #d7e3e8;text-align:left;">Cara menyiapkan foto</th></tr></thead><tbody><tr><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;"><strong>1</strong></td><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;">Unggah foto ke Google Drive.</td></tr><tr><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;"><strong>2</strong></td><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;">Klik tombol <strong>Bagikan</strong> pada file foto.</td></tr><tr><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;"><strong>3</strong></td><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;">Pada akses umum, pilih <strong>Siapa saja yang memiliki link</strong>.</td></tr><tr><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;"><strong>4</strong></td><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;">Atur peran menjadi <strong>Pelihat (Viewer)</strong> saja. Jangan pilih Editor atau Pemberi komentar.</td></tr><tr><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;"><strong>5</strong></td><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;">Salin link berbagi Google Drive lalu tempelkan ke kolom URL Foto di Admin AMASA.</td></tr></tbody></table></div><p class="muted" style="margin:12px 0 0;"><strong>Catatan:</strong> Uji link di jendela samaran sebelum menyimpan. Jika foto dihapus dari Drive atau aksesnya diubah, foto tidak akan tampil di website.</p></div><div class="full" id="videoLinkGuide" hidden style="margin-top:18px;padding:16px;border:1px solid #d7e3e8;border-radius:12px;background:#f8fbfc;"><strong style="display:block;font-size:16px;margin-bottom:10px;">Panduan Menambahkan Video</strong><p class="muted" style="margin:0 0 12px;">Video dapat menggunakan link berbagi Google Drive atau link YouTube. Admin AMASA hanya menyimpan URL video.</p><div style="overflow-x:auto;"><table style="width:100%;border-collapse:collapse;min-width:520px;background:#fff;"><thead><tr style="background:#eaf3f5;"><th style="padding:10px;border:1px solid #d7e3e8;text-align:left;">Langkah</th><th style="padding:10px;border:1px solid #d7e3e8;text-align:left;">Cara menyiapkan video</th></tr></thead><tbody><tr><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;"><strong>1</strong></td><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;">Pilih salah satu: unggah video ke Google Drive atau YouTube.</td></tr><tr><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;"><strong>2</strong></td><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;">Jika menggunakan Google Drive, klik <strong>Bagikan</strong>, pilih <strong>Siapa saja yang memiliki link</strong>, lalu atur peran <strong>Pelihat (Viewer)</strong>.</td></tr><tr><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;"><strong>3</strong></td><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;">Jika menggunakan YouTube, salin URL video. Video bisa berstatus Publik atau Tidak Publik (Unlisted), bukan Pribadi.</td></tr><tr><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;"><strong>4</strong></td><td style="padding:10px;border:1px solid #d7e3e8;vertical-align:top;">Tempel URL ke kolom link video di Admin AMASA, lalu simpan konten.</td></tr></tbody></table></div><p class="muted" style="margin:12px 0 0;"><strong>Catatan:</strong> Uji link di jendela samaran. Jika video dihapus, akses diubah, atau link tidak dapat diakses publik, video tidak akan tampil.</p></div><div class="full" id="testimonialItemsWrap" hidden><strong>Testimoni Pelanggan</strong><p class="muted">Tambahkan nama pelanggan, keterangan, rating, dan pengalaman pelanggan.</p><div id="testimonialAdminList" class="gallery-admin-list"></div><button type="button" class="secondary" id="addTestimonialItem">+ Tambah Testimoni</button></div><div class="full" id="faqItemsWrap" hidden><strong>FAQ</strong><p class="muted">Tambahkan pertanyaan dan jawaban yang akan tampil pada website.</p><div id="faqAdminList" class="gallery-admin-list"></div><button type="button" class="secondary" id="addFaqItem">+ Tambah FAQ</button></div>
+          <label class="check-row"><input id="contentActive" type="checkbox" checked> Konten aktif</label>
+        </div>
+        <div class="form-actions"><button type="button" class="secondary" data-content-close>Batal</button><button type="submit" class="primary" id="saveContent">Simpan Konten</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/webm-duration-fix@1.0.4/dist/EBML.js"></script>
+  <script src="admin.js?v=20261010-gallery-video-guides-1"></script>
+</body>
+</html>
