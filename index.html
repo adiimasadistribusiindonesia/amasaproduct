@@ -1029,6 +1029,52 @@ h3 {
   will-change: auto;
 }
 
+/* On phones, use the available screen height for the video instead of
+   keeping the desktop 16:9 preview short and letterboxed. */
+@media (max-width: 760px) {
+  #videoModal .modal-box {
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    padding: 12px;
+    overflow-y: auto;
+    border-radius: 18px;
+  }
+
+  #videoModalContent .amasa-video-frame {
+    width: 100%;
+    height: min(62dvh, 620px);
+    aspect-ratio: auto !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  #videoModalContent .amasa-video-frame iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  #videoModalContent .amasa-video-frame video {
+    display: block;
+    width: auto !important;
+    height: auto !important;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+
+  #videoModalContent h3 {
+    margin: 12px 42px 4px 0 !important;
+    font-size: clamp(18px, 5vw, 24px);
+    line-height: 1.25;
+  }
+}
+
 .modal-close {
   position: absolute;
   top: 10px;
@@ -2333,7 +2379,7 @@ summary:focus-visible {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?v=20261011-customer-service-popup-2"></script>
+  <script src="script.js?v=20261011-mobile-video-modal-1"></script>
 
 
 </body>
