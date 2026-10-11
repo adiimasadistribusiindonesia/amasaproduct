@@ -1478,57 +1478,45 @@ async function loadAmasaVideo(){
             });
           });
 
-          // Android Chrome renders an extra overlay timeline on top of its
-          // native controls. Replace native controls on mobile with one clean
-          // custom control row so only a single seek bar remains visible.
+          // On mobile, remove all browser-native controls (including the
+          // duplicate timeline/fullscreen UI) and show one centered play button.
           if (window.matchMedia && window.matchMedia("(max-width: 760px)").matches) {
+            amasaVideo.controls = false;
             amasaVideo.removeAttribute("controls");
             const shell = amasaVideo.closest(".amasa-video-shell");
             if (shell) {
-              const controls = document.createElement("div");
-              controls.className = "amasa-custom-controls";
-              controls.innerHTML =
-                '<button type="button" class="amasa-custom-play" aria-label="Putar video">▶</button>' +
-                '<input class="amasa-custom-seek" type="range" min="0" max="1000" value="0" step="1" aria-label="Posisi video">' +
-                '<span class="amasa-custom-time">0:00 / 0:00</span>';
-              shell.appendChild(controls);
+              const playButton = document.createElement("button");
+              playButton.type = "button";
+              playButton.className = "amasa-center-play";
+              playButton.setAttribute("aria-label", "Putar video");
+              playButton.textContent = "▶";
+              shell.appendChild(playButton);
 
-              const playButton = controls.querySelector(".amasa-custom-play");
-              const seek = controls.querySelector(".amasa-custom-seek");
-              const time = controls.querySelector(".amasa-custom-time");
-              const formatTime = (seconds) => {
-                if (!Number.isFinite(seconds) || seconds < 0) seconds = 0;
-                const mins = Math.floor(seconds / 60);
-                const secs = Math.floor(seconds % 60);
-                return mins + ":" + String(secs).padStart(2, "0");
+              const updatePlayButton = () => {
+                const isPaused = amasaVideo.paused || amasaVideo.ended;
+                playButton.hidden = !isPaused;
+                playButton.setAttribute("aria-label", isPaused ? "Putar video" : "Jeda video");
+                playButton.textContent = "▶";
               };
-              const updateControls = () => {
-                const duration = Number.isFinite(amasaVideo.duration) ? amasaVideo.duration : 0;
-                time.textContent = formatTime(amasaVideo.currentTime) + " / " + formatTime(duration);
-                seek.value = duration ? String(Math.round(amasaVideo.currentTime / duration * 1000)) : "0";
-                playButton.textContent = amasaVideo.paused ? "▶" : "Ⅱ";
-                playButton.setAttribute("aria-label", amasaVideo.paused ? "Putar video" : "Jeda video");
-              };
-              playButton.addEventListener("click", () => {
-                if (amasaVideo.paused) {
+              const togglePlayback = () => {
+                if (amasaVideo.paused || amasaVideo.ended) {
+                  if (amasaVideo.ended) amasaVideo.currentTime = 0;
                   const result = amasaVideo.play();
-                  if (result && typeof result.catch === "function") result.catch(() => {});
+                  if (result && typeof result.catch === "function") result.catch(() => updatePlayButton());
                 } else {
                   amasaVideo.pause();
                 }
-                updateControls();
+              };
+              playButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                togglePlayback();
               });
-              seek.addEventListener("input", () => {
-                const duration = Number.isFinite(amasaVideo.duration) ? amasaVideo.duration : 0;
-                if (duration) {
-                  amasaVideo.currentTime = Number(seek.value) / 1000 * duration;
-                  updateControls();
-                }
+              amasaVideo.addEventListener("click", togglePlayback);
+              ["play", "pause", "ended", "loadedmetadata"].forEach((eventName) => {
+                amasaVideo.addEventListener(eventName, updatePlayButton);
               });
-              ["loadedmetadata", "durationchange", "timeupdate", "play", "pause", "ended", "seeked"].forEach((eventName) => {
-                amasaVideo.addEventListener(eventName, updateControls);
-              });
-              updateControls();
+              updatePlayButton();
             }
           }
         }
