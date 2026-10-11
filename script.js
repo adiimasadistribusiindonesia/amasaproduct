@@ -1458,7 +1458,10 @@ async function loadAmasaVideo(){
           // Do not embed the Google Drive preview iframe: its player controls are
           // cross-origin and cannot be styled/removed by AMASA. Play the media
           // through a video element so mobile can use the single centered button.
-          const driveVideoUrl="https://drive.google.com/uc?export=download&id="+encodeURIComponent(driveId);
+          // Prefer Drive's usercontent endpoint for an HTML5 media source.
+          // The legacy drive.google.com/uc endpoint can return an interstitial
+          // instead of byte-range media, which prevents custom controls from working.
+          const driveVideoUrl="https://drive.usercontent.google.com/download?id="+encodeURIComponent(driveId)+"&export=download";
           const safeDriveVideoUrl=escapeHTML(driveVideoUrl);
           const posterUrl=item.poster_url||item.thumbnail_url||item.image_url||"";
           const safePoster=posterUrl?escapeHTML(String(posterUrl)):"";
@@ -1499,45 +1502,84 @@ async function loadAmasaVideo(){
             fallbackToDrivePreview();
           });
 
-          // On mobile, remove all browser-native controls (including the
-          // duplicate timeline/fullscreen UI) and show one centered play button.
+          // On mobile, replace the browser-native controls with a compact
+          // custom control strip at the bottom of the full-screen video.
           if (window.matchMedia && window.matchMedia("(max-width: 760px)").matches) {
             amasaVideo.controls = false;
             amasaVideo.removeAttribute("controls");
             const shell = amasaVideo.closest(".amasa-video-shell");
             if (shell) {
-              const playButton = document.createElement("button");
-              playButton.type = "button";
-              playButton.className = "amasa-center-play";
-              playButton.setAttribute("aria-label", "Putar video");
-              playButton.textContent = "▶";
-              shell.appendChild(playButton);
+              const controls = document.createElement("div");
+              controls.className = "amasa-video-controls";
+              controls.innerHTML =
+                '<button type="button" class="amasa-video-control-play" aria-label="Putar video">▶</button>' +
+                '<input class="amasa-video-seek" type="range" min="0" max="1000" value="0" aria-label="Posisi video">' +
+                '<span class="amasa-video-time">0:00 / 0:00</span>' +
+                '<button type="button" class="amasa-video-control-mute" aria-label="Matikan suara">🔊</button>';
+              shell.appendChild(controls);
 
-              const updatePlayButton = () => {
-                const isPaused = amasaVideo.paused || amasaVideo.ended;
-                playButton.hidden = !isPaused;
-                playButton.setAttribute("aria-label", isPaused ? "Putar video" : "Jeda video");
-                playButton.textContent = "▶";
+              const playButton = controls.querySelector(".amasa-video-control-play");
+              const seek = controls.querySelector(".amasa-video-seek");
+              const time = controls.querySelector(".amasa-video-time");
+              const muteButton = controls.querySelector(".amasa-video-control-mute");
+              const formatTime = (seconds) => {
+                if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
+                const whole = Math.floor(seconds);
+                return Math.floor(whole / 60) + ":" + String(whole % 60).padStart(2, "0");
               };
-              const togglePlayback = () => {
-                if (amasaVideo.paused || amasaVideo.ended) {
-                  if (amasaVideo.ended) amasaVideo.currentTime = 0;
-                  const result = amasaVideo.play();
-                  if (result && typeof result.catch === "function") result.catch(() => { if (!fallbackToDrivePreview()) updatePlayButton(); });
-                } else {
-                  amasaVideo.pause();
+              const updateControls = () => {
+                const paused = amasaVideo.paused || amasaVideo.ended;
+                playButton.textContent = paused ? "▶" : "Ⅱ";
+                playButton.setAttribute("aria-label", paused ? "Putar video" : "Jeda video");
+                const duration = Number.isFinite(amasaVideo.duration) ? amasaVideo.duration : 0;
+                if (!seek.matches(":active")) {
+                  seek.value = duration > 0 ? String(Math.round((amasaVideo.currentTime / duration) * 1000)) : "0";
                 }
+                time.textContent = formatTime(amasaVideo.currentTime) + " / " + formatTime(duration);
+                muteButton.textContent = amasaVideo.muted || amasaVideo.volume === 0 ? "🔇" : "🔊";
+                muteButton.setAttribute("aria-label", amasaVideo.muted ? "Nyalakan suara" : "Matikan suara");
               };
               playButton.addEventListener("click", (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                togglePlayback();
+                if (amasaVideo.paused || amasaVideo.ended) {
+                  if (amasaVideo.ended) amasaVideo.currentTime = 0;
+                  const result = amasaVideo.play();
+                  if (result && typeof result.catch === "function") {
+                    result.catch(() => {
+                      // If Drive blocks direct media playback, preserve playback
+                      // via its preview player rather than leaving a dead screen.
+                      if (!fallbackToDrivePreview()) updateControls();
+                    });
+                  }
+                } else {
+                  amasaVideo.pause();
+                }
               });
-              amasaVideo.addEventListener("click", togglePlayback);
-              ["play", "pause", "ended", "loadedmetadata"].forEach((eventName) => {
-                amasaVideo.addEventListener(eventName, updatePlayButton);
+              seek.addEventListener("input", () => {
+                const duration = amasaVideo.duration;
+                if (Number.isFinite(duration) && duration > 0) {
+                  amasaVideo.currentTime = (Number(seek.value) / 1000) * duration;
+                }
               });
-              updatePlayButton();
+              muteButton.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                amasaVideo.muted = !amasaVideo.muted;
+                updateControls();
+              });
+              amasaVideo.addEventListener("click", () => {
+                if (amasaVideo.paused) {
+                  const result = amasaVideo.play();
+                  if (result && typeof result.catch === "function") result.catch(() => {});
+                } else {
+                  amasaVideo.pause();
+                }
+              });
+              ["play", "pause", "ended", "loadedmetadata", "durationchange", "timeupdate", "volumechange"].forEach((eventName) => {
+                amasaVideo.addEventListener(eventName, updateControls);
+              });
+              updateControls();
             }
           }
         }
