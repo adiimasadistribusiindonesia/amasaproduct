@@ -1522,6 +1522,26 @@ async function loadAmasaVideo(){
               const seek = controls.querySelector(".amasa-video-seek");
               const time = controls.querySelector(".amasa-video-time");
               const muteButton = controls.querySelector(".amasa-video-control-mute");
+              let controlsHideTimer = null;
+              const showControls = () => {
+                controls.classList.remove("is-hidden");
+                if (controlsHideTimer !== null) {
+                  clearTimeout(controlsHideTimer);
+                  controlsHideTimer = null;
+                }
+              };
+              const scheduleHideControls = () => {
+                if (controlsHideTimer !== null) clearTimeout(controlsHideTimer);
+                if (amasaVideo.paused || amasaVideo.ended) {
+                  showControls();
+                  return;
+                }
+                controlsHideTimer = setTimeout(() => {
+                  if (!amasaVideo.paused && !amasaVideo.ended) {
+                    controls.classList.add("is-hidden");
+                  }
+                }, 2200);
+              };
               const formatTime = (seconds) => {
                 if (!Number.isFinite(seconds) || seconds < 0) return "0:00";
                 const whole = Math.floor(seconds);
@@ -1568,15 +1588,28 @@ async function loadAmasaVideo(){
                 amasaVideo.muted = !amasaVideo.muted;
                 updateControls();
               });
+              // Tapping the picture reveals the control strip without pausing
+              // the video. The strip fades away again while playback continues.
               amasaVideo.addEventListener("click", () => {
-                if (amasaVideo.paused) {
-                  const result = amasaVideo.play();
-                  if (result && typeof result.catch === "function") result.catch(() => {});
-                } else {
-                  amasaVideo.pause();
-                }
+                showControls();
+                if (!amasaVideo.paused && !amasaVideo.ended) scheduleHideControls();
               });
-              ["play", "pause", "ended", "loadedmetadata", "durationchange", "timeupdate", "volumechange"].forEach((eventName) => {
+              controls.addEventListener("click", showControls);
+              seek.addEventListener("pointerdown", showControls);
+              seek.addEventListener("pointerup", scheduleHideControls);
+              ["play", "playing"].forEach((eventName) => {
+                amasaVideo.addEventListener(eventName, () => {
+                  updateControls();
+                  scheduleHideControls();
+                });
+              });
+              ["pause", "ended"].forEach((eventName) => {
+                amasaVideo.addEventListener(eventName, () => {
+                  showControls();
+                  updateControls();
+                });
+              });
+              ["loadedmetadata", "durationchange", "timeupdate", "volumechange"].forEach((eventName) => {
                 amasaVideo.addEventListener(eventName, updateControls);
               });
               updateControls();
