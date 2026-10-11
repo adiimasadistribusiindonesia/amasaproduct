@@ -149,7 +149,7 @@ async function loadAmasaSettings() {
     }
     if (settings.whatsapp) {
       AMASA_CONFIG.whatsappNumber = String(settings.whatsapp).replace(/[^0-9]/g, "");
-      getElements("[data-amasa-whatsapp]").forEach((el) => el.href = "https://wa.me/" + AMASA_CONFIG.whatsappNumber);
+      getElements("[data-amasa-whatsapp]").forEach((el) => el.href = "https://wa.me/" + AMASA_CONFIG.whatsappNumber + "?text=" + encodeURIComponent(AMASA_CONFIG.whatsappMessage));
       getElements("[data-amasa-whatsapp-text]").forEach((el) => el.textContent = AMASA_CONFIG.whatsappNumber);
     }
     if (settings.email) {
@@ -638,7 +638,7 @@ function openWhatsApp(customMessage = AMASA_CONFIG.whatsappMessage) {
 }
 
 
-getElements("[data-whatsapp]").forEach((button) => {
+getElements("[data-whatsapp], [data-amasa-whatsapp]").forEach((button) => {
 
   button.addEventListener("click", (event) => {
 
