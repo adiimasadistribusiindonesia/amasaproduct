@@ -149,84 +149,135 @@ function formatDayLabel(key){
   const parts=key.split("-");
   return parts.length===3 ? parts[2]+"/"+parts[1] : key;
 }
+function getWibDateKey(value){
+  const parts=new Intl.DateTimeFormat("en-US",{
+    timeZone:"Asia/Jakarta",
+    year:"numeric",
+    month:"2-digit",
+    day:"2-digit"
+  }).formatToParts(value instanceof Date ? value : new Date(value));
+  const year=parts.find(p=>p.type==="year")?.value;
+  const month=parts.find(p=>p.type==="month")?.value;
+  const day=parts.find(p=>p.type==="day")?.value;
+  return year+"-"+month+"-"+day;
+}
 async function loadVisitorAnalytics(){
   const visitorsEl=$("#analyticsVisitors"), pageviewsEl=$("#analyticsPageviews"), sessionsEl=$("#analyticsSessions");
   const chart=$("#visitorChart"), empty=$("#visitorEmpty");
+  const panel=chart?.closest(".analytics-panel");
   if(!visitorsEl||!pageviewsEl||!sessionsEl||!chart)return;
 
-  const jakartaParts=new Intl.DateTimeFormat("en-US",{timeZone:"Asia/Jakarta",year:"numeric",month:"2-digit",day:"2-digit"}).formatToParts(new Date());
-  const jakartaYear=jakartaParts.find(p=>p.type==="year")?.value;
-  const jakartaMonth=jakartaParts.find(p=>p.type==="month")?.value;
-  const jakartaDay=jakartaParts.find(p=>p.type==="day")?.value;
-  const today=new Date(Number(jakartaYear),Number(jakartaMonth)-1,Number(jakartaDay));
-  const start=new Date(today);
-  start.setDate(today.getDate()-6);
-  const startKey=formatDateKey(start);
-  const endKey=formatDateKey(today);
-
-  const {data,error}=await db.from("analytics_daily")
-    .select("analytics_date,total_visitors,unique_visitors,total_sessions,total_pageviews")
-    .eq("module_slug","AMASA")
-    .gte("analytics_date",startKey)
-    .lte("analytics_date",endKey)
-    .order("analytics_date",{ascending:true});
-
-  if(error){
-    console.error("AMASA analytics:",error);
-    return;
+  if(empty){
+    empty.hidden=false;
+    empty.textContent="Memuat data kunjungan website...";
   }
+  panel?.classList.remove("analytics-panel--empty","analytics-panel--error");
 
-  const byDate={};
-  (data||[]).forEach(row=>{byDate[row.analytics_date]=row});
+  const todayKey=getWibDateKey(new Date());
+  const [year,month,day]=todayKey.split("-").map(Number);
+  const startDate=new Date(Date.UTC(year,month-1,day-6));
   const rows=[];
   for(let i=0;i<7;i++){
-    const d=new Date(start);
-    d.setDate(start.getDate()+i);
-    const key=formatDateKey(d);
-    rows.push({
-      key,
-      label:formatDayLabel(key),
-      visitors:Number(byDate[key]?.unique_visitors||0),
-      pageviews:Number(byDate[key]?.total_pageviews||0),
-      sessions:Number(byDate[key]?.total_sessions||0)
-    });
+    const d=new Date(startDate);
+    d.setUTCDate(startDate.getUTCDate()+i);
+    const key=d.toISOString().slice(0,10);
+    rows.push({key,label:formatDayLabel(key),visitorIds:new Set(),sessionIds:new Set(),pageviews:0});
   }
 
-  const totals=rows.reduce((a,r)=>({
-    visitors:a.visitors+r.visitors,
-    pageviews:a.pageviews+r.pageviews,
-    sessions:a.sessions+r.sessions
-  }),{visitors:0,pageviews:0,sessions:0});
+  try{
+    /*
+      Baca sumber transaksi analytics yang benar-benar ditulis oleh
+      track_platform_analytics. analytics_daily tidak diperbarui otomatis,
+      sehingga tidak boleh dijadikan sumber dashboard.
+    */
+    const {data,error}=await db.rpc("get_platform_analytics",{
+      p_client_name:"AMASA",
+      p_module_slug:"AMASA"
+    });
 
-  visitorsEl.textContent=totals.visitors.toLocaleString("id-ID");
-  pageviewsEl.textContent=totals.pageviews.toLocaleString("id-ID");
-  sessionsEl.textContent=totals.sessions.toLocaleString("id-ID");
+    if(error)throw error;
+    if(!Array.isArray(data))throw new Error("Respons analytics tidak valid.");
 
-  const max=Math.max(...rows.map(r=>r.visitors),1);
-  const width=900,height=280,left=48,right=18,top=22,bottom=42;
-  const plotW=width-left-right,plotH=height-top-bottom;
-  const points=rows.map((r,i)=>{
-    const x=left+(plotW*(i/(rows.length-1)));
-    const y=top+plotH-(r.visitors/max)*plotH;
-    return {x,y,r};
-  });
-  const path=points.map((p,i)=>(i?"L":"M")+p.x.toFixed(1)+" "+p.y.toFixed(1)).join(" ");
-  const area=path+" L "+points[points.length-1].x.toFixed(1)+" "+(top+plotH)+" L "+points[0].x.toFixed(1)+" "+(top+plotH)+" Z";
-  const grid=[0,.25,.5,.75,1].map(v=>{
-    const y=top+plotH-v*plotH;
-    return '<line x1="'+left+'" y1="'+y+'" x2="'+(width-right)+'" y2="'+y+'" class="chart-grid"></line>';
-  }).join("");
-  const labels=points.map(p=>'<text x="'+p.x+'" y="'+(height-13)+'" text-anchor="middle" class="chart-label">'+p.r.label+'</text>').join("");
-  const dots=points.map(p=>'<circle cx="'+p.x+'" cy="'+p.y+'" r="4" class="chart-dot"></circle>').join("");
-  chart.innerHTML=grid+
-    '<path d="'+area+'" class="chart-area"></path>'+
-    '<path d="'+path+'" class="chart-line"></path>'+
-    dots+labels;
+    const byDate=new Map(rows.map(row=>[row.key,row]));
+    const allVisitors=new Set();
+    const allSessions=new Set();
+    let totalPageviews=0;
 
-  const hasAnalyticsData=totals.visitors+totals.pageviews+totals.sessions!==0;
-  if(empty) empty.hidden=hasAnalyticsData;
-  chart.closest(".analytics-panel")?.classList.toggle("analytics-panel--empty",!hasAnalyticsData);
-  chart.style.opacity=totals.visitors===0 ? "0.35" : "1";
+    data.forEach(item=>{
+      if(!item?.viewed_at)return;
+      const key=getWibDateKey(item.viewed_at);
+      const dayRow=byDate.get(key);
+      if(!dayRow)return;
+      dayRow.pageviews++;
+      totalPageviews++;
+      if(item.visitor_id){
+        dayRow.visitorIds.add(item.visitor_id);
+        allVisitors.add(item.visitor_id);
+      }
+      if(item.session_id){
+        dayRow.sessionIds.add(item.session_id);
+        allSessions.add(item.session_id);
+      }
+    });
+
+    const totals={
+      visitors:allVisitors.size,
+      pageviews:totalPageviews,
+      sessions:allSessions.size
+    };
+    visitorsEl.textContent=totals.visitors.toLocaleString("id-ID");
+    pageviewsEl.textContent=totals.pageviews.toLocaleString("id-ID");
+    sessionsEl.textContent=totals.sessions.toLocaleString("id-ID");
+
+    rows.forEach(row=>{
+      row.visitors=row.visitorIds.size;
+      row.sessions=row.sessionIds.size;
+    });
+
+    const max=Math.max(...rows.map(row=>row.visitors),1);
+    const width=900,height=280,left=48,right=18,top=22,bottom=42;
+    const plotW=width-left-right,plotH=height-top-bottom;
+    const points=rows.map((row,i)=>{
+      const x=left+(plotW*(i/(rows.length-1)));
+      const y=top+plotH-(row.visitors/max)*plotH;
+      return {x,y,r:row};
+    });
+    const path=points.map((point,i)=>(i?"L":"M")+point.x.toFixed(1)+" "+point.y.toFixed(1)).join(" ");
+    const area=path+" L "+points[points.length-1].x+" "+(top+plotH)+" L "+points[0].x+" "+(top+plotH)+" Z";
+    const grid=[0,.25,.5,.75,1].map(v=>{
+      const y=top+plotH-v*plotH;
+      return '<line x1="'+left+'" y1="'+y+'" x2="'+(width-right)+'" y2="'+y+'" class="chart-grid"></line>';
+    }).join("");
+    const labels=points.map(point=>'<text x="'+point.x+'" y="'+(height-13)+'" text-anchor="middle" class="chart-label">'+point.r.label+'</text>').join("");
+    const dots=points.map(point=>'<circle cx="'+point.x+'" cy="'+point.y+'" r="4" class="chart-dot"><title>'+point.r.label+': '+point.r.visitors+' pengunjung unik</title></circle>').join("");
+    chart.innerHTML=grid+
+      '<path d="'+area+'" class="chart-area"></path>'+
+      '<path d="'+path+'" class="chart-line"></path>'+
+      dots+labels;
+
+    const hasData=totals.pageviews>0;
+    if(empty){
+      empty.hidden=false;
+      empty.textContent=hasData
+        ? "Grafik menampilkan pengunjung unik per hari. Total 7 hari: "+totals.visitors.toLocaleString("id-ID")+" pengunjung unik, "+totals.pageviews.toLocaleString("id-ID")+" pageview, dan "+totals.sessions.toLocaleString("id-ID")+" sesi."
+        : "Belum ada kunjungan AMASA yang tercatat dalam 7 hari terakhir.";
+    }
+    panel?.classList.toggle("analytics-panel--empty",!hasData);
+    panel?.classList.remove("analytics-panel--error");
+    chart.style.opacity=hasData?"1":"0.65";
+  }catch(error){
+    console.error("AMASA analytics gagal dimuat:",error);
+    if(empty){
+      empty.hidden=false;
+      empty.textContent="Data analytics gagal dimuat. Silakan refresh halaman; jika masalah berlanjut, periksa izin akses RPC get_platform_analytics di Supabase.";
+    }
+    panel?.classList.add("analytics-panel--error");
+    panel?.classList.remove("analytics-panel--empty");
+    visitorsEl.textContent="—";
+    pageviewsEl.textContent="—";
+    sessionsEl.textContent="—";
+    chart.innerHTML="";
+  }
 }
 
 async function loadCategories(){
