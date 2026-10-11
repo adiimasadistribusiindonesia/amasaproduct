@@ -109,3 +109,6 @@ button{cursor:pointer}
 @media(max-width:900px){
   .sidebar-copyright{font-size:9px;padding:12px 10px 0}
 }
+
+/* Keep the mobile analytics card compact when there is no visitor data */
+.analytics-panel.analytics-panel--empty .visitor-chart-wrap{display:none}
