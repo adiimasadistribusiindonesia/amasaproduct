@@ -1458,12 +1458,12 @@ async function loadAmasaVideo(){
           // Do not embed the Google Drive preview iframe: its player controls are
           // cross-origin and cannot be styled/removed by AMASA. Play the media
           // through a video element so mobile can use the single centered button.
-          const driveVideoUrl="https://drive.usercontent.google.com/download?id="+encodeURIComponent(driveId)+"&export=download";
+          const driveVideoUrl="https://drive.google.com/uc?export=download&id="+encodeURIComponent(driveId);
           const safeDriveVideoUrl=escapeHTML(driveVideoUrl);
           const posterUrl=item.poster_url||item.thumbnail_url||item.image_url||"";
           const safePoster=posterUrl?escapeHTML(String(posterUrl)):"";
           media='<div class="amasa-video-shell amasa-video-frame" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;">'+
-            '<video controls playsinline preload="metadata" class="amasa-video-player" '+(safePoster?'poster="'+safePoster+'" ':'')+'src="'+safeDriveVideoUrl+'" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;"></video>'+
+            '<video controls playsinline preload="metadata" class="amasa-video-player" data-fallback-url="https://drive.google.com/file/d/'+encodeURIComponent(driveId)+'/preview" '+(safePoster?'poster="'+safePoster+'" ':'')+'src="'+safeDriveVideoUrl+'" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;"></video>'+
           '</div>';
         }else if(/\.(mp4|webm|ogg)(?:\?|#|$)/i.test(url)){
           const posterUrl = item.poster_url || item.thumbnail_url || item.image_url || "";
@@ -1480,11 +1480,23 @@ async function loadAmasaVideo(){
 
         const amasaVideo = videoModalContent.querySelector(".amasa-video-shell video");
         if (amasaVideo) {
+          const fallbackToDrivePreview = () => {
+            const fallbackUrl = amasaVideo.dataset.fallbackUrl;
+            if (!fallbackUrl) return false;
+            const shell = amasaVideo.closest(".amasa-video-shell");
+            if (!shell) return false;
+            // Google Drive sometimes refuses to stream its download URL inside
+            // a video element. Fall back to Drive's native preview so playback
+            // still works instead of leaving a black screen.
+            shell.innerHTML = '<iframe src="' + escapeHTML(fallbackUrl) + '" title="Video AMASA" style="display:block;width:100%;height:100%;border:0;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+            return true;
+          };
           amasaVideo.addEventListener("error", () => {
             console.warn("AMASA video playback error", {
               code: amasaVideo.error?.code || null,
               message: amasaVideo.error?.message || ""
             });
+            fallbackToDrivePreview();
           });
 
           // On mobile, remove all browser-native controls (including the
@@ -1511,7 +1523,7 @@ async function loadAmasaVideo(){
                 if (amasaVideo.paused || amasaVideo.ended) {
                   if (amasaVideo.ended) amasaVideo.currentTime = 0;
                   const result = amasaVideo.play();
-                  if (result && typeof result.catch === "function") result.catch(() => updatePlayButton());
+                  if (result && typeof result.catch === "function") result.catch(() => { if (!fallbackToDrivePreview()) updatePlayButton(); });
                 } else {
                   amasaVideo.pause();
                 }
