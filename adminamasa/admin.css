@@ -239,3 +239,26 @@ button{cursor:pointer}
     padding-right: 12px;
   }
 }
+
+
+/* Keep the active-content checkbox and label close together on mobile and desktop */
+#contentModal .form-grid label.check-row {
+  display: flex !important;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px !important;
+  width: fit-content;
+  max-width: 100%;
+}
+#contentModal .form-grid label.check-row input[type="checkbox"] {
+  width: 18px !important;
+  min-width: 18px;
+  max-width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  margin: 0;
+}
+#contentModal .form-grid label.check-row input[type="checkbox"] + * {
+  min-width: 0;
+}
