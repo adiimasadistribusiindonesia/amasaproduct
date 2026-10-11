@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AMASA Admin — Reset Password</title><link rel="stylesheet" href="admin.css"><style>
+.login-page{min-height:100vh;display:grid;place-items:center;padding:25px;background:linear-gradient(135deg,#0b1928,#244966)}
+.login-card{width:min(430px,94vw);background:#fff;border-radius:16px;padding:35px;box-shadow:0 30px 80px #0005}
+.login-logo{font-size:30px;font-weight:900;letter-spacing:.18em;color:#102437}.login-sub{font-size:10px;font-weight:900;letter-spacing:.16em;color:#b58a50;margin-top:5px}.login-card h1{margin:30px 0 8px}.login-card p{color:#6b7785;font-size:13px}.login-form{display:grid;gap:15px;margin-top:25px}.login-form label{display:grid;gap:7px;font-size:12px;font-weight:800}.login-form input{width:100%;padding:12px;border:1px solid #e2e7eb;border-radius:8px;box-sizing:border-box}.password-wrap{position:relative}.password-wrap input{padding-right:44px}.password-toggle{position:absolute;right:12px;bottom:9px;border:0!important;background:transparent!important;color:#6b7785!important;padding:3px!important;font-size:18px!important;line-height:1;cursor:pointer!important}.login-form button{border:0;border-radius:8px;padding:12px;background:#b58a50;color:#fff;font-weight:800;cursor:pointer}.login-form button.login-link{background:transparent;color:#8d6b3e;padding:4px}.login-msg{font-size:12px;color:#b83b3b;min-height:18px}.login-msg.ok{color:#27763e}.hidden{display:none!important}
+</style></head><body>
+<main class="login-page"><section class="login-card">
+<div class="login-logo">AMASA</div><div class="login-sub">ADMIN PANEL</div>
+<h1 id="title">Lupa Password</h1><p id="desc">Masukkan email akun Admin AMASA untuk menerima link reset password.</p>
+<form id="resetForm" class="login-form">
+<label id="emailWrap">Email<input id="email" name="email" type="email" autocomplete="username" required></label>
+<label id="passWrap" class="password-wrap hidden">Password Baru<input id="password" type="password" minlength="6"><button type="button" class="password-toggle" aria-label="Tampilkan password" onclick="togglePassword('password',this)">👁</button></label>
+<label id="confirmWrap" class="password-wrap hidden">Ulangi Password<input id="confirm" type="password" minlength="6"><button type="button" class="password-toggle" aria-label="Tampilkan password" onclick="togglePassword('confirm',this)">👁</button></label>
+<button id="submit" type="button">Kirim Link Reset</button>
+<button type="button" class="login-link" onclick="location.href='login.html'">Kembali ke Login</button>
+<div id="msg" class="login-msg"></div>
+</form>
+</section></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+function togglePassword(id,btn){const input=document.getElementById(id);const show=input.type==="password";input.type=show?"text":"password";btn.textContent=show?"🙈":"👁";btn.setAttribute("aria-label",show?"Sembunyikan password":"Tampilkan password")}
+const db=supabase.createClient("https://fysaxpqpqexjnlpkbwap.supabase.co","sb_publishable_DWRaEZTcNMjhglwN3nqCOw_pua8rsjD");
+const form=document.getElementById("resetForm"),msg=document.getElementById("msg"),submit=document.getElementById("submit");
+let recovery=false;
+const RATE_LIMIT_MS=60*60*1000, RATE_LIMIT_KEY="amasa_reset_rate_limit_until";
+let countdownTimer=null;
+function formatCountdown(ms){const total=Math.max(0,Math.ceil(ms/1000)),h=Math.floor(total/3600),m=Math.floor((total%3600)/60),s=total%60;return h+":"+String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");}
+function startRateLimitCountdown(until){
+  localStorage.setItem(RATE_LIMIT_KEY,String(until));
+  clearInterval(countdownTimer);
+  submit.disabled=true;
+  submit.style.opacity=".6";
+  submit.style.cursor="not-allowed";
+  const tick=()=>{
+    const remaining=until-Date.now();
+    if(remaining<=0){
+      clearInterval(countdownTimer);
+      localStorage.removeItem(RATE_LIMIT_KEY);
+      submit.disabled=false;
+      submit.style.opacity="";
+      submit.style.cursor="";
+      msg.textContent="Batas waktu selesai. Silakan kirim link reset lagi.";
+      return;
+    }
+    msg.textContent="Batas pengiriman email tercapai. Coba lagi dalam "+formatCountdown(remaining);
+  };
+  tick();
+  countdownTimer=setInterval(tick,1000);
+}
+function restoreRateLimitCountdown(){
+  const until=Number(localStorage.getItem(RATE_LIMIT_KEY)||0);
+  if(until>Date.now()) startRateLimitCountdown(until);
+  else localStorage.removeItem(RATE_LIMIT_KEY);
+}
+function isRateLimitError(error){
+  const text=String(error?.message||error?.code||"").toLowerCase();
+  return text.includes("rate limit")||text.includes("too many")||text.includes("over_email_send_rate_limit")||text.includes("email rate limit");
+}
+function setRecovery(){recovery=true;clearInterval(countdownTimer);localStorage.removeItem(RATE_LIMIT_KEY);document.getElementById("emailWrap").classList.add("hidden");document.getElementById("passWrap").classList.remove("hidden");document.getElementById("confirmWrap").classList.remove("hidden");document.getElementById("title").textContent="Password Baru";document.getElementById("desc").textContent="Buat password baru untuk akun Admin AMASA.";submit.textContent="Simpan Password Baru";submit.disabled=false;submit.style.opacity="";submit.style.cursor="";}
+db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"&&session)setRecovery();});
+restoreRateLimitCountdown();
+async function handleResetClick(){if(!recovery){if(submit.disabled)return;msg.textContent="Mengirim link reset...";const {error}=await db.auth.resetPasswordForEmail(document.getElementById("email").value.trim(),{redirectTo:location.origin+location.pathname});if(error){msg.textContent=error.message;if(isRateLimitError(error))startRateLimitCountdown(Date.now()+RATE_LIMIT_MS);}else{msg.className="login-msg ok";msg.textContent="Link reset sudah dikirim. Silakan cek Gmail/spam.";}}else{const p=document.getElementById("password").value,c=document.getElementById("confirm").value;if(p!==c){msg.textContent="Password tidak sama.";return}if(p.length<6){msg.textContent="Password minimal 6 karakter.";return}msg.textContent="Menyimpan...";const {error}=await db.auth.updateUser({password:p});if(error){msg.textContent=error.message;return}await db.auth.signOut();msg.className="login-msg ok";msg.textContent="Password berhasil diubah. Silakan login kembali.";setTimeout(()=>location.href="login.html",1200)}}
+document.getElementById("submit").addEventListener("click",handleResetClick);
+</script></body></html>
