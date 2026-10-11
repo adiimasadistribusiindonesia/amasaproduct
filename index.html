@@ -1013,6 +1013,17 @@ h3 {
   width: min(900px, calc(100vw - 40px));
 }
 
+/* Popup detail produk harus bisa discroll sampai tombol konsultasi. */
+#productModal .modal-box {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+#productModal #productModalContent {
+  padding-bottom: 24px;
+}
+
 /* Keep the video decoder out of paint/3D containment layers on mobile browsers. */
 #videoModal {
   contain: none;
