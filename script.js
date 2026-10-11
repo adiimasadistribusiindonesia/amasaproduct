@@ -1058,7 +1058,7 @@ function openProductModal(productId) {
       <img
         src="${escapeHTML(product.image)}"
         alt="${escapeHTML(product.name)}"
-        style="width:100%;border-radius:12px;">
+        style="display:block;width:100%;max-height:38vh;object-fit:contain;object-position:center;border-radius:12px;margin:0 auto 18px;background:#f5f7f8;">
     `
     : `
       <div
