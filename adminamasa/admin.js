@@ -223,7 +223,9 @@ async function loadVisitorAnalytics(){
     '<path d="'+path+'" class="chart-line"></path>'+
     dots+labels;
 
-  if(empty) empty.hidden=totals.visitors+totals.pageviews+totals.sessions!==0;
+  const hasAnalyticsData=totals.visitors+totals.pageviews+totals.sessions!==0;
+  if(empty) empty.hidden=hasAnalyticsData;
+  chart.closest(".analytics-panel")?.classList.toggle("analytics-panel--empty",!hasAnalyticsData);
   chart.style.opacity=totals.visitors===0 ? "0.35" : "1";
 }
 
