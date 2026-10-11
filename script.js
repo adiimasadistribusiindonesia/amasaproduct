@@ -16,7 +16,7 @@ const AMASA_CONFIG = {
     "Halo AMASA, saya ingin bertanya mengenai produk AMASA.",
   currency: "IDR",
   companyName: "PT Adiimasa Distribusi Indonesia",
-  email: ""
+  email: "support@amasaindonesia.com"
 };
 
 
@@ -151,11 +151,13 @@ async function loadAmasaSettings() {
       AMASA_CONFIG.whatsappNumber = String(settings.whatsapp).replace(/[^0-9]/g, "");
       getElements("[data-amasa-whatsapp]").forEach((el) => el.href = "https://wa.me/" + AMASA_CONFIG.whatsappNumber + "?text=" + encodeURIComponent(AMASA_CONFIG.whatsappMessage));
       getElements("[data-amasa-whatsapp-text]").forEach((el) => el.textContent = AMASA_CONFIG.whatsappNumber);
+      updateCustomerServiceLinks();
     }
     if (settings.email) {
       AMASA_CONFIG.email = settings.email;
       getElements("[data-amasa-email]").forEach((el) => el.href = "mailto:" + settings.email);
       getElements("[data-amasa-email-text]").forEach((el) => el.textContent = settings.email);
+      updateCustomerServiceLinks();
     }
   } catch (e) {
     console.warn("AMASA Settings REST:", e);
@@ -638,17 +640,68 @@ function openWhatsApp(customMessage = AMASA_CONFIG.whatsappMessage) {
 }
 
 
-getElements("[data-whatsapp], [data-amasa-whatsapp]").forEach((button) => {
-
+/* Tombol WhatsApp di footer tetap membuka WhatsApp langsung.
+   Tombol melayang membuka popup pilihan Customer Service. */
+getElements("[data-whatsapp]").forEach((button) => {
   button.addEventListener("click", (event) => {
-
     event.preventDefault();
-
     openWhatsApp();
-
   });
-
 });
+
+function updateCustomerServiceLinks() {
+  const emailLink = getElement("#amasaCustomerServiceEmail");
+  const emailText = getElement("#amasaCustomerServiceEmailText");
+  const whatsappLink = getElement("#amasaCustomerServiceWhatsApp");
+  const whatsappText = getElement("#amasaCustomerServiceWhatsAppText");
+
+  if (emailLink && AMASA_CONFIG.email) {
+    emailLink.href = "mailto:" + AMASA_CONFIG.email;
+  }
+  if (emailText) {
+    emailText.textContent = AMASA_CONFIG.email || "Email belum diatur";
+  }
+
+  if (whatsappLink && AMASA_CONFIG.whatsappNumber && AMASA_CONFIG.whatsappNumber !== "6280000000000") {
+    whatsappLink.href = "https://wa.me/" + AMASA_CONFIG.whatsappNumber + "?text=" + encodeURIComponent(AMASA_CONFIG.whatsappMessage);
+    whatsappLink.removeAttribute("aria-disabled");
+  } else if (whatsappLink) {
+    whatsappLink.href = "#";
+    whatsappLink.setAttribute("aria-disabled", "true");
+  }
+  if (whatsappText) {
+    whatsappText.textContent = AMASA_CONFIG.whatsappNumber && AMASA_CONFIG.whatsappNumber !== "6280000000000"
+      ? AMASA_CONFIG.whatsappNumber
+      : "Nomor WhatsApp belum diatur";
+  }
+}
+
+const amasaCsModal = getElement("#amasaCustomerServiceModal");
+const amasaCsOpen = getElement("#amasaCustomerServiceOpen");
+const amasaCsClose = getElement("#amasaCustomerServiceClose");
+
+function closeAmasaCustomerService() {
+  if (amasaCsModal) amasaCsModal.classList.remove("is-open");
+}
+
+if (amasaCsOpen && amasaCsModal) {
+  amasaCsOpen.addEventListener("click", () => {
+    updateCustomerServiceLinks();
+    amasaCsModal.classList.add("is-open");
+  });
+}
+if (amasaCsClose) {
+  amasaCsClose.addEventListener("click", closeAmasaCustomerService);
+}
+if (amasaCsModal) {
+  amasaCsModal.addEventListener("click", (event) => {
+    if (event.target === amasaCsModal) closeAmasaCustomerService();
+  });
+}
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") closeAmasaCustomerService();
+});
+updateCustomerServiceLinks();
 
 
 /* =========================================================
