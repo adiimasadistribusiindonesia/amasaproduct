@@ -1068,6 +1068,16 @@ h3 {
     object-fit: contain;
   }
 
+  /* Hide the duplicate floating/overlay timeline in Android Chrome.
+     Keep the regular bottom controls and their seek bar visible. */
+  #videoModalContent .amasa-video-frame video::-webkit-media-controls-overlay-enclosure {
+    display: none !important;
+  }
+
+  #videoModalContent .amasa-video-frame video::-webkit-media-controls-overlay-play-button {
+    display: none !important;
+  }
+
   /* Keep Android Chrome's native control panel aligned to the video width. */
   #videoModalContent .amasa-video-frame video::-webkit-media-controls-panel {
     width: 100%;
@@ -2388,7 +2398,7 @@ summary:focus-visible {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?v=20261011-mobile-video-controls-2"></script>
+  <script src="script.js?v=20261011-hide-duplicate-video-timeline-3"></script>
 
 
 </body>
