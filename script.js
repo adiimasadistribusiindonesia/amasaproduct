@@ -1462,11 +1462,13 @@ async function loadAmasaVideo(){
           // The legacy drive.google.com/uc endpoint can return an interstitial
           // instead of byte-range media, which prevents custom controls from working.
           const driveVideoUrl="https://drive.usercontent.google.com/download?id="+encodeURIComponent(driveId)+"&export=download";
+          const driveAlternateUrl="https://drive.google.com/uc?export=download&id="+encodeURIComponent(driveId);
           const safeDriveVideoUrl=escapeHTML(driveVideoUrl);
+          const safeDriveAlternateUrl=escapeHTML(driveAlternateUrl);
           const posterUrl=item.poster_url||item.thumbnail_url||item.image_url||"";
           const safePoster=posterUrl?escapeHTML(String(posterUrl)):"";
           media='<div class="amasa-video-shell amasa-video-frame" style="position:relative;width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:#000;">'+
-            '<video controls playsinline preload="metadata" class="amasa-video-player" data-fallback-url="https://drive.google.com/file/d/'+encodeURIComponent(driveId)+'/preview" '+(safePoster?'poster="'+safePoster+'" ':'')+'src="'+safeDriveVideoUrl+'" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;"></video>'+
+            '<video controls playsinline preload="metadata" class="amasa-video-player" data-alternate-url="'+safeDriveAlternateUrl+'" data-fallback-url="https://drive.google.com/file/d/'+encodeURIComponent(driveId)+'/preview" '+(safePoster?'poster="'+safePoster+'" ':'')+'src="'+safeDriveVideoUrl+'" style="display:block;width:100%;height:100%;object-fit:contain;background:#000;"></video>'+
           '</div>';
         }else if(/\.(mp4|webm|ogg)(?:\?|#|$)/i.test(url)){
           const posterUrl = item.poster_url || item.thumbnail_url || item.image_url || "";
@@ -1483,14 +1485,32 @@ async function loadAmasaVideo(){
 
         const amasaVideo = videoModalContent.querySelector(".amasa-video-shell video");
         if (amasaVideo) {
+          let alternateDriveTried = false;
+          let previewFallbackTried = false;
           const fallbackToDrivePreview = () => {
+            // First retry with Drive's alternate direct-media endpoint. This keeps
+            // playback inside the HTML5 player when one endpoint refuses streaming.
+            if (!alternateDriveTried && amasaVideo.dataset.alternateUrl) {
+              alternateDriveTried = true;
+              const alternateUrl = amasaVideo.dataset.alternateUrl;
+              const wasPlaying = !amasaVideo.paused && !amasaVideo.ended;
+              console.warn("AMASA video: retrying alternate Google Drive media endpoint");
+              amasaVideo.src = alternateUrl;
+              amasaVideo.load();
+              if (wasPlaying) {
+                const retryPlay = amasaVideo.play();
+                if (retryPlay && typeof retryPlay.catch === "function") retryPlay.catch(() => {});
+              }
+              return true;
+            }
             const fallbackUrl = amasaVideo.dataset.fallbackUrl;
-            if (!fallbackUrl) return false;
+            if (!fallbackUrl || previewFallbackTried) return false;
             const shell = amasaVideo.closest(".amasa-video-shell");
             if (!shell) return false;
-            // Google Drive sometimes refuses to stream its download URL inside
-            // a video element. Fall back to Drive's native preview so playback
-            // still works instead of leaving a black screen.
+            previewFallbackTried = true;
+            // Last resort: Drive's own preview player. Its controls are cross-origin,
+            // so AMASA custom controls cannot style or hide them.
+            console.warn("AMASA video: direct playback failed; using Google Drive preview");
             shell.innerHTML = '<iframe src="' + escapeHTML(fallbackUrl) + '" title="Video AMASA" style="display:block;width:100%;height:100%;border:0;" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
             return true;
           };
