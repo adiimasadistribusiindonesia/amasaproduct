@@ -117,3 +117,25 @@ button{cursor:pointer}
 .analytics-panel.analytics-panel--empty .visitor-chart-wrap{min-height:0}
 .analytics-panel.analytics-panel--empty .visitor-chart{display:none}
 .analytics-panel.analytics-panel--empty .analytics-empty{position:static;display:block;padding:12px 0 2px;text-align:left;line-height:1.5;font-size:12px;font-weight:500}
+
+/* Analytics chart frame: make the graph area visibly useful on mobile */
+.visitor-chart-wrap{
+  border:1.5px solid #172433;
+  border-radius:10px;
+  padding:12px;
+  min-height:430px;
+  margin-top:10px;
+  background:#fff;
+}
+.visitor-chart-wrap .visitor-chart{display:block;width:100%;height:290px;opacity:1}
+.visitor-chart-wrap .analytics-empty{
+  position:static;
+  display:block;
+  padding:4px 0 8px;
+  text-align:left;
+  line-height:1.5;
+  font-size:12px;
+  font-weight:500;
+}
+.analytics-panel.analytics-panel--empty .visitor-chart-wrap{min-height:430px}
+.analytics-panel.analytics-panel--empty .visitor-chart{display:block}
