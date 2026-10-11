@@ -1033,16 +1033,16 @@ h3 {
    keeping the desktop 16:9 preview short and letterboxed. */
 @media (max-width: 760px) {
   #videoModal .modal-box {
-    width: calc(100vw - 20px);
-    max-height: calc(100dvh - 20px);
-    padding: 12px;
+    width: calc(100vw - 32px);
+    max-height: 82dvh;
+    padding: 10px;
     overflow-y: auto;
     border-radius: 18px;
   }
 
   #videoModalContent .amasa-video-frame {
     width: 100%;
-    height: min(62dvh, 620px);
+    height: min(46dvh, 420px);
     aspect-ratio: auto !important;
     display: flex;
     align-items: center;
@@ -1082,33 +1082,33 @@ h3 {
     flex: 1 1 auto;
     min-height: 0;
     width: 100% !important;
-    height: calc(100% - 54px) !important;
+    height: calc(100% - 44px) !important;
     max-width: 100%;
-    max-height: calc(100% - 54px);
+    max-height: calc(100% - 44px);
     object-fit: contain;
   }
 
   #videoModalContent .amasa-custom-controls {
-    flex: 0 0 54px;
+    flex: 0 0 44px;
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 7px;
     box-sizing: border-box;
     width: 100%;
-    padding: 0 10px;
+    padding: 0 8px;
     color: #fff;
     background: #101820;
   }
 
   #videoModalContent .amasa-custom-play {
-    flex: 0 0 38px;
-    width: 38px;
-    height: 38px;
+    flex: 0 0 30px;
+    width: 30px;
+    height: 30px;
     border: 0;
     border-radius: 50%;
     color: #101820;
     background: #fff;
-    font-size: 17px;
+    font-size: 14px;
     line-height: 1;
   }
 
@@ -1123,7 +1123,7 @@ h3 {
   #videoModalContent .amasa-custom-time {
     flex: 0 0 auto;
     color: #fff;
-    font-size: 12px;
+    font-size: 10px;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
@@ -2439,7 +2439,7 @@ summary:focus-visible {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?v=20261011-custom-mobile-video-controls-4"></script>
+  <script src="script.js?v=20261011-compact-mobile-video-controls-5"></script>
 
 
 </body>
