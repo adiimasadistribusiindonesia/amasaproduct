@@ -166,3 +166,76 @@ button{cursor:pointer}
   max-height:220px;
   aspect-ratio:900 / 280;
 }
+
+
+/* Mobile responsive fix: gallery and video URL fields must fit the modal */
+#contentModal,
+#contentModal .modal-box,
+#contentModal #contentForm,
+#contentModal .form-grid,
+#contentModal .form-grid > *,
+#contentModal .form-grid .full,
+#galleryImagesWrap,
+#videoItemsWrap,
+#galleryAdminList,
+#videoAdminList,
+.gallery-admin-item,
+.gallery-admin-item > * {
+  min-width: 0;
+  max-width: 100%;
+}
+#galleryAdminList,
+#videoAdminList {
+  width: 100%;
+  grid-template-columns: minmax(0, 1fr);
+}
+.gallery-admin-item {
+  width: 100%;
+  overflow: hidden;
+}
+.gallery-admin-item input,
+.gallery-admin-item textarea,
+#contentModal input,
+#contentModal textarea,
+#contentModal select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+#contentModal .gallery-admin-item .gallery-preview {
+  width: auto;
+  max-width: 100%;
+  height: auto;
+  max-height: 180px;
+}
+#contentModal #mediaLinkGuide,
+#contentModal #videoLinkGuide {
+  width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+#contentModal #mediaLinkGuide p,
+#contentModal #videoLinkGuide p {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+@media(max-width:600px) {
+  #contentModal.modal { padding: 8px; overflow-x: hidden; }
+  #contentModal .modal-box {
+    width: 100%;
+    max-width: 100%;
+    padding: 18px 12px;
+    overflow-x: hidden;
+  }
+  #contentModal .form-grid { grid-template-columns: minmax(0, 1fr); }
+  #contentModal .form-grid .full { grid-column: 1 / -1; }
+  #contentModal .gallery-admin-list { grid-template-columns: minmax(0, 1fr); }
+  #contentModal .gallery-admin-item { padding: 10px; }
+  #contentModal .form-actions {
+    margin-left: -12px;
+    margin-right: -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
