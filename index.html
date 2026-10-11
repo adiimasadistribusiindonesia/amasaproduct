@@ -1124,73 +1124,6 @@ h3 {
     background: #000;
   }
 
-  /* Compact playback controls: one small row anchored to the bottom. */
-  #videoModalContent .amasa-video-controls {
-    position: absolute;
-    z-index: 6;
-    left: 14px;
-    right: 14px;
-    bottom: max(18px, env(safe-area-inset-bottom));
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    box-sizing: border-box;
-    min-height: 48px;
-    padding: 6px 10px;
-    border: 1px solid rgba(255,255,255,.16);
-    border-radius: 16px;
-    background: rgba(18,22,26,.72);
-    color: #fff;
-    backdrop-filter: blur(10px);
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-    transition: opacity .22s ease, transform .22s ease, visibility .22s ease;
-  }
-
-  #videoModalContent .amasa-video-controls.is-hidden {
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(8px);
-    pointer-events: none;
-  }
-
-  #videoModalContent .amasa-video-controls button {
-    flex: 0 0 34px;
-    width: 34px;
-    height: 34px;
-    display: grid;
-    place-items: center;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: #fff;
-    font-size: 19px;
-    line-height: 1;
-  }
-
-  #videoModalContent .amasa-video-seek {
-    flex: 1 1 auto;
-    min-width: 24px;
-    width: 100%;
-    height: 4px;
-    margin: 0;
-    accent-color: #f1a45b;
-    cursor: pointer;
-  }
-
-  #videoModalContent .amasa-video-time {
-    flex: 0 0 auto;
-    min-width: 70px;
-    color: #fff;
-    font-size: 11px;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
-    text-align: center;
-    white-space: nowrap;
-  }
-
   #videoModalContent h3 {
     display: none;
   }
@@ -2500,7 +2433,7 @@ summary:focus-visible {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?v=20261011-autohide-controls-11"></script>
+  <script src="script.js?v=20261011-native-browser-controls-12"></script>
 
 
 </body>
