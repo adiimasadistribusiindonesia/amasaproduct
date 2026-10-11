@@ -1068,64 +1068,49 @@ h3 {
     object-fit: contain;
   }
 
-  /* Mobile uses our own single-row controls; native Chrome controls
-     are disabled on this viewport so duplicate overlay timelines cannot appear. */
+  /* Mobile video uses a single centered play button only.
+     No native timeline, bottom play button, settings, or fullscreen overlay. */
   #videoModalContent .amasa-video-frame.amasa-video-shell {
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: 0;
+    position: relative !important;
+    display: block;
+    height: min(46dvh, 420px);
+    background: #000;
   }
 
   #videoModalContent .amasa-video-shell > video {
-    flex: 1 1 auto;
-    min-height: 0;
+    position: absolute;
+    inset: 0;
+    display: block;
     width: 100% !important;
-    height: calc(100% - 44px) !important;
+    height: 100% !important;
     max-width: 100%;
-    max-height: calc(100% - 44px);
+    max-height: 100%;
     object-fit: contain;
+    background: #000;
   }
 
-  #videoModalContent .amasa-custom-controls {
-    flex: 0 0 44px;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    box-sizing: border-box;
-    width: 100%;
-    padding: 0 8px;
-    color: #fff;
-    background: #101820;
-  }
-
-  #videoModalContent .amasa-custom-play {
-    flex: 0 0 30px;
-    width: 30px;
-    height: 30px;
+  #videoModalContent .amasa-center-play {
+    position: absolute;
+    z-index: 5;
+    left: 50%;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 64px;
+    height: 64px;
+    padding: 0 0 0 4px;
     border: 0;
     border-radius: 50%;
+    transform: translate(-50%, -50%);
     color: #101820;
-    background: #fff;
-    font-size: 14px;
+    background: rgba(255, 255, 255, 0.94);
+    font-size: 28px;
     line-height: 1;
+    box-shadow: 0 2px 14px rgba(0,0,0,.18);
   }
 
-  #videoModalContent .amasa-custom-seek {
-    flex: 1 1 auto;
-    min-width: 40px;
-    width: 100%;
-    margin: 0;
-    accent-color: #fff;
-  }
-
-  #videoModalContent .amasa-custom-time {
-    flex: 0 0 auto;
-    color: #fff;
-    font-size: 10px;
-    white-space: nowrap;
-    font-variant-numeric: tabular-nums;
+  #videoModalContent .amasa-center-play[hidden] {
+    display: none !important;
   }
 
   #videoModalContent h3 {
@@ -2439,7 +2424,7 @@ summary:focus-visible {
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js?v=20261011-compact-mobile-video-controls-5"></script>
+  <script src="script.js?v=20261011-mobile-center-play-only-6"></script>
 
 
 </body>
