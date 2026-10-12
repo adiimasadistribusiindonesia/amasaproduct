@@ -155,7 +155,7 @@ async function loadAmasaSettings() {
     }
     if (settings.email) {
       AMASA_CONFIG.email = settings.email;
-      getElements("[data-amasa-email]").forEach((el) => el.href = "mailto:" + settings.email);
+      getElements("[data-amasa-email]").forEach((el) => { el.href = "https://mail.google.com/mail/u/0/?fs=1&to=" + encodeURIComponent(settings.email) + "&tf=cm"; el.target = "_blank"; el.rel = "noopener noreferrer"; });
       getElements("[data-amasa-email-text]").forEach((el) => el.textContent = settings.email);
       updateCustomerServiceLinks();
     }
