@@ -656,7 +656,7 @@ function updateCustomerServiceLinks() {
   const whatsappText = getElement("#amasaCustomerServiceWhatsAppText");
 
   if (emailLink && AMASA_CONFIG.email) {
-    emailLink.href = "https://mail.google.com/mail/?view=cm&fs=1&to=" + encodeURIComponent(AMASA_CONFIG.email);
+    emailLink.href = "https://mail.google.com/mail/u/0/?fs=1&to=support@amasaindonesia.com&tf=cm";
   }
   if (emailText) {
     emailText.textContent = AMASA_CONFIG.email || "Email belum diatur";
