@@ -155,7 +155,7 @@ async function loadAmasaSettings() {
     }
     if (settings.email) {
       AMASA_CONFIG.email = settings.email;
-      getElements("[data-amasa-email]").forEach((el) => el.href = "https://mail.google.com/mail/u/0/?fs=1&to=" + encodeURIComponent(settings.email) + "&tf=cm);
+      getElements("[data-amasa-email]").forEach((el) => el.href = "https://mail.google.com/mail/u/0/?fs=1&to=" + encodeURIComponent(settings.email) + "&tf=cm";
       getElements("[data-amasa-email-text]").forEach((el) => el.textContent = settings.email);
       updateCustomerServiceLinks();
     }
@@ -656,7 +656,7 @@ function updateCustomerServiceLinks() {
   const whatsappText = getElement("#amasaCustomerServiceWhatsAppText");
 
   if (emailLink && AMASA_CONFIG.email) {
-    emailLink.href = "https://mail.google.com/mail/u/0/?fs=1&to=" + encodeURIComponent(AMASA_CONFIG.email) + "&tf=cm;
+    emailLink.href = "https://mail.google.com/mail/u/0/?fs=1&to=" + encodeURIComponent(AMASA_CONFIG.email) + "&tf=cm";
   }
   if (emailText) {
     emailText.textContent = AMASA_CONFIG.email || "Email belum diatur";
